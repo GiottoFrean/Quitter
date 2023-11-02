@@ -1,0 +1,25 @@
+# Ignore Python bytecode files
+__pycache__/
+*.pyc
+*.pyo
+
+# Ignore cached files
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore IDE-specific files
+.idea/
+.vscode/
+
+# Ignore virtual environment files
+venv/
+env/
+*.env
+
+# Ignore log files
+*.log
+
+# Ignore database and settings files
+database/local.py
+dash_app/recaptcha_config.json
