@@ -1,0 +1,621 @@
+/* Getting rid of debug thing */
+.dash-debug-menu__outer--open {
+    bottom: 10px;
+    left: 10px;
+    right: initial;
+    display: none;
+    padding: 5px 5px 5px 78px;
+}
+
+.dash-debug-menu__outer--closed {
+    bottom: 18px;
+    left: 21px;
+    right: initial;
+    display: none;
+}
+
+.dash-debug-menu {
+    bottom: 18px;
+    left: 21px;
+    display: none;
+}
+
+/* Reset some default margin and padding */
+html, body {
+    margin: 0;
+    padding: 0;
+}
+
+/* Apply a basic font and spacing */
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+}
+
+/* Set some defaults on scrollbars */
+/* width */
+::-webkit-scrollbar {
+    width: 6px; /* Set the width of the scrollbar */
+}
+
+/* track */
+::-webkit-scrollbar-track {
+    background: #f1f1f1; /* Color of the track */
+}
+
+/* handle */
+::-webkit-scrollbar-thumb {
+    background: #888; /* Color of the thumb */
+    border-radius: 3px; /* Rounded corners of the thumb */
+}
+
+.overall-container {
+    margin-bottom: 75px;
+    display: flex;
+    flex-flow: column nowrap;
+}
+
+.fixed-header-bar {
+    position: -webkit-sticky;
+    position: sticky;
+    top: 0px;
+    left: 0;
+    width: 100%;
+    background-color: #4e5471;
+    transition: transform 0.1s ease;
+    border-bottom: 1px solid #CCC;
+    z-index: 100;
+}
+
+.nav-quitter-container {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: center;
+    width: 100%;
+}
+
+.nav-quitter {
+    font-size: xx-large;
+    font-weight: bold;
+    margin: 0;
+    color: white;
+    text-decoration: none;
+    font-style: normal;
+    display: flex;
+    flex-flow: row nowrap;
+    gap: 2px;
+}
+
+.nav-links {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    background-color: #d8d7c4;
+}
+
+.logo {
+    display: flex;  /* Display logo and text horizontally */
+    align-items: center;  /* Vertical alignment of elements */
+}
+
+.logo-img {
+    width: 50px;  /* Adjust the width of your logo */
+    height: auto;  /* Maintain aspect ratio */
+}
+
+/* Styles for input area */
+.fixed-input-area {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 10px;
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: center;
+    align-items: flex-end;
+    background-image: linear-gradient(180deg,hsla(0,0%,100%,0) 13.94%,#fff 54.73%);
+}
+
+.mantine-Input-wrapper .mantine-Input-input .mantine-1cp6ct5 .mantine-1m3pqry {
+    border: none !important;
+}
+
+.mantine-Textarea-input {
+    border: none !important;
+    scroll-padding-bottom: 10px !important;
+}
+
+.application-status-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #f5f5f5;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    padding-left: 10px;
+    padding-right: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    z-index: 51;
+    position: relative;
+}
+
+.application-status-text {
+    font-size: 12px;
+    margin: 0;
+    color: #777;
+}
+
+/* Styles for chat display, including a shadow */
+.message-input-and-button {
+    position: relative;
+    max-width: 700px;
+    flex: 1 1 auto;
+    border: 1px solid #CCC;
+    background-color: white;
+    border-radius: 5px;
+    box-shadow: 0 0 5px 0 rgba(0,0,0,0.2);
+    display: flex;
+    flex-flow: row nowrap;
+}
+
+@media (max-width: 1000px) {
+    .message-input-and-button {
+        max-width: 600px;
+    }
+}
+
+@media (max-width: 800px) {
+    .message-input-and-button {
+        max-width: 500px;
+    }
+}
+
+.message-input-listener {
+    flex: 1 1 auto;
+}
+
+.message-input {
+    flex: 1 1 auto;
+    border: none !important;
+}
+
+.mantine-1f3akmo {
+    padding-right: 45px;
+}
+
+.mantine-Textarea-error {
+    padding-right: 45px;
+}
+
+/* Styles for send button */
+.message-send-button-container {
+    position: absolute;
+    right: 0px;
+    bottom: 0px;
+    flex: 0 0 auto;
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: flex-end;
+}
+
+.message-send-button {
+    background-color: #4e5471;
+    color: white;
+    border: none;
+    margin: 5px;
+    padding: 0px;
+    margin-bottom: 7px;
+    margin-right: 7px;
+    height: 36px;
+    width: 36px;
+    cursor: pointer;
+}
+
+/* Stuff for voting & showing messages */
+.credit-and-voting-container {
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: center;
+    z-index: 50;
+    margin-top: -1px;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+.credit-and-voting-title {
+    font-size: 18px;
+    font-weight: bold;
+    margin: 0 0 10px 0;
+    color: #666;
+}
+
+.voting-container {
+    background-color: white;
+    width: 700px;
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: center;
+}
+
+.voting-row {
+    flex: 1 1 auto;
+    width: 100%;
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    overflow: hidden;
+    border-bottom: 1px solid #CCC;
+    margin-bottom: -1px;
+    gap: 10px;
+}
+
+.voting-row.hide {
+    max-height: 0px;
+    transition: max-height 1s linear;
+}
+
+.voting-row.show {
+    max-height: 266px;
+    transition: max-height 1s linear;
+}
+
+.voting-message-container {
+    flex: 1 1 0;
+    min-height: 120px;
+    border: none;
+    border-radius: 5px;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.message-text {
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+    text-align: left;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 10;
+    -webkit-box-orient: vertical;
+}
+
+.show-more-modal-body {
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+    text-align: left;
+}
+
+.voting-row-square-and-buttons {
+    display: flex;
+    flex-flow: row nowrap;
+    gap: 10px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+.voting-row-buttons {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: center;
+    gap: 10px;
+}
+
+.vote-button-up {
+    background-color: #497462;
+    height: 36px;
+    width: 36px;
+}
+
+.vote-button-down {
+    background-color: #ff3917;
+    height: 36px;
+    width: 36px;
+    cursor: pointer;
+}
+
+.vote-square-container{
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: center;
+    justify-content: center;
+}
+
+.vote-square {
+    rotate: -45deg;
+    position: relative;
+    min-height: 80px;
+    min-width: 80px;
+    width: 80px;
+    height: 80px;
+    margin: 20px;
+}
+
+.vote-square-grid-container {
+    height: 80px;
+    width: 80px;
+    position: absolute;
+}
+
+.vote-square-number-holder {
+    position: absolute;
+    rotate: 45deg;
+    width: 80px;
+    height: 80px;
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: center;
+}
+
+.vote-square-number {
+    font-size: 48px;
+    font-weight: bold;
+    color: black;
+}
+
+.grid-table {
+    background-color: none;
+    border-collapse: collapse;
+}
+
+.grid-table-row {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.grid-table-column {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0;
+}
+
+.grid-table-cell {
+    height: 9px;
+    width: 9px;
+    border: 1px solid #444444;
+    margin-left: -1px;
+    margin-top: -1px;
+}
+
+.vote-square-marker {
+    background-color: #497462;
+    position: absolute;
+}
+
+.credits-container {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: center;
+    align-items: center;
+}
+
+.credit-row {
+    min-height: 8px;
+    min-width: 160px;
+    width: 160px;
+    height: 8px;
+}
+
+.credit-grid-container {
+    height: 8px;
+    width: 160px;
+}
+
+.credit-marker {
+    background-color: #8f9acf;
+    margin-bottom: -8px;
+    margin-left: -1px;
+}
+
+.credits-and-vote-show-hide-wrapper {
+    overflow: hidden;
+}
+
+.credits-and-vote-show-hide-wrapper.hide {
+    max-height: 0px;
+    transition: max-height 1s linear;
+}
+
+.credits-and-vote-show-hide-wrapper.show {
+    max-height: 116px;
+    transition: max-height 1s linear;
+}
+
+.credits-and-vote-container {
+    flex: 0 0 auto;
+    display: flex;
+    flex-flow: row wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    margin-top: 5px;
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+.send-votes-button {
+    background-color: #4e5471;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.previous-messages-container {
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: center;
+    background-color: #f5f5f5;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+.previous-messages {
+    overflow-y: hidden;
+    width: 700px;
+}
+
+.previous-messages-title {
+    font-size: 18px;
+    font-weight: bold;
+    margin: 0 0 10px 0;
+    color: #666;
+}
+
+.message-container-previous {
+    width: 100%;
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: flex-start;
+    overflow: hidden;
+    padding-left: 10px;
+    padding-right: 10px;
+    border-bottom: 1px solid #CCC;
+}
+
+.message-text-previous {
+    flex: 1 1 0;
+    max-width: 100%;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+    text-align: left;
+}
+
+.show-more-button {
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+@media (max-width: 1000px) {
+    .voting-container {
+        width: 600px;
+    }
+    .previous-messages {
+        width: 600px;
+    }
+}
+
+@media (max-width: 900px) {
+    .voting-container {
+        width: 500px;
+    }
+    .previous-messages {
+        width: 500px;
+    }
+}
+
+@media (max-width: 700px) {
+    .voting-container {
+        width: 400px;
+    }
+    .previous-messages {
+        width: 400px;
+    }
+}
+
+@media (max-width: 450px) {
+    .voting-container {
+        width: 100%;
+    }
+    .previous-messages {
+        width: 100%;
+    }
+    .voting-row-square-and-buttons {
+        flex-flow: column nowrap;
+    }
+    .voting-row-buttons {
+        flex-flow: row-reverse nowrap;
+        justify-content: center;
+        align-items: center;
+    }
+}
+
+.about-page {
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: center;
+}
+
+.vote-page {
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: center;
+}
+
+.explanation-container {
+    max-width: 700px;
+    margin-left: 50px;
+    margin-right: 50px;
+}
+
+.explanation-graph-container {
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: center;
+}
+
+.explanation-graph {
+    width: 500px;
+}
+
+@media (max-width: 600px) {
+    .explanation-graph {
+        width: 400px;
+    }
+}
+
+@media (max-width: 450px) {
+    .explanation-graph {
+        width: 300px;
+    }
+}
+
+/* reset ol, dl stuff */
+ol, ul, dl {
+    padding-left: 1rem;
+}
+
+.logo-header {
+    width: 25px;
+    transform: rotate(-45deg);
+    margin: 10px;
+}
+
+.logo-about-container {
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: center;
+}
+
+.logo-about {
+    width: 200px;
+    transform: rotate(-45deg);
+    padding-top: 50px;
+    padding-bottom: 50px;
+}
+
+@media (max-width: 450px) {
+    .logo-about {
+        padding-top: 35px;
+        padding-bottom: 35px;
+        width: 150px;
+    }
+}
+
+/* Fuck off */
+.grecaptcha-badge {
+    visibility: hidden;
+}
