@@ -178,6 +178,7 @@ def update_state(session):
         raise Exception("Invalid round status: " + current_state.round_status)
     
     state_str = f"collection_id: {new_state.collection_id}, collection_status: {new_state.collection_status}, collection_count: {new_state.collection_count}, collection_end_time: {new_state.collection_end_time}, round_status: {new_state.round_status}, round_voters: {new_state.round_voters}, round_end_time: {new_state.round_end_time}, round_id: {new_state.round_id}"
+    print("Updating", time.time(), state_str)
     session.add(new_state)
     session.commit()
 
