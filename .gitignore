@@ -19,7 +19,3 @@ env/
 
 # Ignore log files
 *.log
-
-# Ignore database and settings files
-database/local.py
-dash_app/recaptcha_config.json
