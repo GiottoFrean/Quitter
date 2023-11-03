@@ -13,7 +13,7 @@ import dash_extensions
 import json
 import requests
 
-recaptcha_config = json.load(open("dash_app/recaptcha_config.json"))
+app_config = json.load(open("dash_app/app_config.json"))
 
 dash.register_page(__name__,path="/")
 
@@ -284,7 +284,7 @@ dash.clientside_callback(
         }
         return '';
     }
-    """.replace("_site-key",recaptcha_config["recaptcha_site_key"]),
+    """.replace("_site-key",app_config["recaptcha_site_key"]),
     Output('recaptcha-send-message', 'data'),
     Input('send-message', 'data')
 )
@@ -300,7 +300,7 @@ def send_message(recaptcha_token, message):
         response = requests.post(
             'https://www.google.com/recaptcha/api/siteverify',
             data = {
-                'secret': recaptcha_config["recaptcha_secret_key"],
+                'secret': app_config["recaptcha_secret_key"],
                 'response': recaptcha_token
             }
         )
@@ -520,7 +520,7 @@ dash.clientside_callback(
         }
         return '';
     }
-    """.replace("_site-key",recaptcha_config["recaptcha_site_key"]),
+    """.replace("_site-key",app_config["recaptcha_site_key"]),
     Output('recaptcha-send-votes', 'data'),
     Input('send-votes', 'data')
 )
@@ -536,7 +536,7 @@ def add_votes(recaptcha_token, votes, round_data):
         response = requests.post(
             'https://www.google.com/recaptcha/api/siteverify',
             data = {
-                'secret': recaptcha_config["recaptcha_secret_key"],
+                'secret': app_config["recaptcha_secret_key"],
                 'response': recaptcha_token
             }
         )

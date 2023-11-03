@@ -7,7 +7,7 @@ from dash_app.utils import database_interaction
 import dash_bootstrap_components as dbc
 import json
 
-recaptcha_config = json.load(open("dash_app/recaptcha_config.json"))
+app_config = json.load(open("dash_app/app_config.json"))
 
 app = dash.Dash(
     __name__, 
@@ -24,7 +24,7 @@ app = dash.Dash(
         {"http-equiv": "X-UA-Compatible", "content": "IE=edge"},
         {"name": "viewport", "content": "width=device-width, initial-scale=1.0"},
     ],
-    external_scripts=["https://www.google.com/recaptcha/api.js?render=_site-key".replace("_site-key",recaptcha_config["recaptcha_site_key"])],
+    external_scripts=["https://www.google.com/recaptcha/api.js?render=_site-key".replace("_site-key",app_config["recaptcha_site_key"])],
 )
 
 navbar = html.Div(
@@ -61,4 +61,4 @@ app.layout = html.Div([
 ])
 
 if __name__ == '__main__':
-    app.run(debug=True,port=5000,host="0.0.0.0")
+    app.run(debug=app_config["debug"],port=5000,host="0.0.0.0")
