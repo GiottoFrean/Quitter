@@ -1,5 +1,5 @@
 {
-    "recaptcha_site_key": "6LdYCN4oAAAAAFVlazzseB4Uw9TVDn8jufXwSh7p",
-    "recaptcha_secret_key": "6LdYCN4oAAAAAIgaYczVctkz1QB1TOHFjtqSNuSg",
+    "recaptcha_site_key": "site_key",
+    "recaptcha_secret_key": "secret_key",
     "debug": true
 }
