@@ -39,8 +39,7 @@ navbar = html.Div(
         html.Div(
             children=[
                 dcc.Link('Home', href='/', className="nav-link"),
-                dcc.Link('About', href='/about', className="nav-link"),
-                #dcc.Link('Votes', href='/votes', className="nav-link"),
+                dcc.Link('About', href='/about', className="nav-link")
             ],
             className="nav-links"
         ),
