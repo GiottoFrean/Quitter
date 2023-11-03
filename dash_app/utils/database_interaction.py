@@ -64,40 +64,6 @@ def fetch_top_messages(count=10,offset=0):
     session.close()
     return top_messages
 
-def fetch_last_round_and_votes():
-    # get the last finished collection and find the last round. Then join with votes.
-    session = SessionLocal()
-    this_round = session.query(Round).order_by(Round.id.desc()).first()
-    if this_round:
-        if(len(this_round.messages) == 1):
-            # round is done, get the previous round
-            last_round = session.query(Round).order_by(Round.id.desc()).offset(1).first()
-        else:
-            # round is ongoing, get the previous collection and the second to last last round
-            last_collection = session.query(Collection).order_by(Collection.id.desc()).offset(2).first()
-            if(last_collection):
-                last_round = session.query(Round).filter(Round.collection_id == last_collection.id).order_by(Round.id.desc()).offset(1).first()
-            else:
-                last_round = None
-    
-        if last_round:
-            associations = session.query(round_message_votes_association).filter(round_message_votes_association.c.round_id == last_round.id).all()
-            messages = []
-            votes = []
-            for association in associations:
-                message = session.query(Message).filter(Message.id == association.message_id).first()
-                messages.append(message)
-                votes.append(association.votes)
-            session.close()
-            content = [message.content for message in messages]
-            return content, votes
-        else:
-            session.close()
-            return [],[]
-    else:
-        session.close()
-        return [],[]
-
 def get_the_average_votes_for_messages_in_round(message_ids,round_id):
     session = SessionLocal()
     avg_votes = []
