@@ -305,19 +305,21 @@ def send_message(recaptcha_token, message):
             }
         )
         result = response.json()
-        if(result["success"] and result["score"] > 0.5):
-            database_interaction.add_comment(message)
+        if((result["success"] and result["score"] > 0.5) or app_config["debug"]==True):
+            database_interaction.add_comment(message+str(result))
     return dash.no_update
 
 # update the application status (stuff at the top of the page)
 @dash.callback(
     Output('application-status', 'children'),
-    [Input('home-refresh-interval', 'n_intervals')]
+    [Input('home-refresh-interval', 'n_intervals')],
+    [State('round-state-switch-time', 'data')]
 )
-def update_application_status(n_intervals):
+def update_application_status(n_intervals, switch_time):
     state = database_interaction.get_current_state()
-    
-    if state:
+    if(not switch_time is None):
+        return html.Div("Round complete, displaying results", className="application-status-text")
+    else:
         id = state.id
         collection_id = state.collection_id - 1 # -1 because the current collection is the one being run, not the one that has just finished
         collection_status = state.collection_status
@@ -478,7 +480,7 @@ dash.clientside_callback(
         let credit = 100 - votes.reduce((a, b) => a + b*b, 0);
         let credit_width = Math.floor(credit / 5);
         let number_of_row_with_extra_credit = credit % 5;
-        let credit_markers = Array.from({length: 5}, (_, i) => i < number_of_row_with_extra_credit ? {width: `${(credit_width+1)*square_size_px+1}px`, height: `${square_size_px+1}px`} : {width: `${credit_width*square_size_px+1}px`, height: `${square_size_px+1}px`});
+        let credit_markers = Array.from({length: 5}, (_, i) => i < number_of_row_with_extra_credit ? {width: `${(credit_width+1)*square_size_px+2}px`, height: `${square_size_px+2}px`} : {width: `${credit_width*square_size_px+1}px`, height: `${square_size_px+1}px`});
         return credit_markers;
     }
     """,
@@ -541,7 +543,7 @@ def add_votes(recaptcha_token, votes, round_data):
             }
         )
         result = response.json()
-        if(result["success"] and result["score"] > 0.5):
+        if((result["success"] and result["score"] > 0.5) or app_config["debug"]==True):
             if(np.sum(np.abs(votes)) >0):
                 for i in range(len(round_data["message_ids"])):
                     database_interaction.add_votes_to_message(round_data["round_id"],round_data["message_ids"][i],votes[i])

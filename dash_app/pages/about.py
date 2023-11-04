@@ -165,10 +165,18 @@ explanation4 = dcc.Markdown(
 
     No. 
 
+    #### Is there any protection against bots?
+
+    Actually yes, it uses the recaptcha v3 thing from google.
+
     #### Why did you make this?
 
     So that I, *Giotto Frean*, can say I did it first.
     And maybe appear in some obscure text book in the future, 'The History of Social Media (revised, 2070 edition)'.
+
+    #### I am Elon Musk and want to buy Quitter for $1 billion. Who do I contact?
+
+    quitterceo@gmail.com
 
     ''',
     mathjax=True
