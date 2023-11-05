@@ -26,6 +26,7 @@ app = dash.Dash(
     ],
     external_scripts=["https://www.google.com/recaptcha/api.js?render=_site-key".replace("_site-key",app_config["recaptcha_site_key"])],
 )
+app._favicon = "logo.svg"
 
 navbar = html.Div(
     id="fixed-header-bar",
@@ -49,6 +50,8 @@ navbar = html.Div(
 server = app.server
 
 app.layout = html.Div([
+    html.Meta(name='description', content='Quadratic voting twitter'),
+    html.Title('Quitter'),
     html.Div(
         children=[
             html.Link(href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css', rel='stylesheet'),

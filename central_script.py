@@ -74,9 +74,11 @@ def update_state(session):
 
     if current_state.collection_status == None:
         # transition to collecting
+        new_state.collection_id = None
         new_state.collection_status = "collecting"
-        new_state.collection_count = 0
+        new_state.collection_count = None
         new_state.collection_end_time = None
+        new_state.collection_round_count = None
     elif current_state.collection_status == "collecting":
         current_collection = session.query(Collection).order_by(Collection.id.desc()).first()
         messages_in_collection = len(current_collection.messages)
@@ -190,6 +192,7 @@ def update_state(session):
         new_state.round_end_time = None
         new_state.round_voters = None
         new_state.round_id = None
+        new_state.round_number = None
     else:
         raise Exception("Invalid round status: " + current_state.round_status)
     

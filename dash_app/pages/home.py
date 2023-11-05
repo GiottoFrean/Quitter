@@ -324,7 +324,7 @@ def update_application_status(n_intervals, switch_time):
         return html.Div("Round complete, displaying results", className="application-status-text")
     else:
         id = state.id
-        collection_id = state.collection_id - 1 # -1 because the current collection is the one being run, not the one that has just finished
+        collection_id = state.collection_id
         collection_status = state.collection_status
         collection_count = state.collection_count
         collection_end_time = state.collection_end_time
@@ -336,22 +336,34 @@ def update_application_status(n_intervals, switch_time):
         round_number = state.round_number
 
         if round_status == "collecting":
-            return html.Div(f"Status: Round {round_number} / {collection_round_count} is being run. Waiting for minimum voters ({round_voters} / {settings.minimum_voters_for_round_to_proceed_to_timing}).", className="application-status-text")
+            if(round_number is None or collection_round_count is None):
+                return html.Div("Loading....", className="application-status-text")
+            else:
+                return html.Div(f"Status: Round {round_number} / {collection_round_count} is being run. Waiting for minimum voters ({round_voters} / {settings.minimum_voters_for_round_to_proceed_to_timing}).", className="application-status-text")
         elif round_status == "waiting":
-            time_remaining = round_end_time - datetime.datetime.now(pytz.utc).replace(tzinfo=None)
-            time_remaining_total_seconds = max(0,int(round(time_remaining.total_seconds(), 0)))
-            time_remaining_minutes = int(math.floor(time_remaining_total_seconds/60))
-            time_remaining_seconds = time_remaining_total_seconds - time_remaining_minutes*60
-            return html.Div(f"Status: Round {round_number} / {collection_round_count} is being run. {round_voters} people have voted so far with {time_remaining_minutes} minutes {time_remaining_seconds} seconds remaining.", className="application-status-text")
-        else:
-            if collection_status == "collecting":
-                return html.Div(f"Status: Collecting a minimum number of comments ({collection_count} / {settings.minimum_comments_for_collection_to_proceed_to_timing}).", className="application-status-text")
-            elif collection_status == "waiting":
-                time_remaining = collection_end_time - datetime.datetime.now(pytz.utc).replace(tzinfo=None)
+            if(round_end_time is None or round_number is None or collection_round_count is None or round_voters is None):
+                return html.Div("Loading....", className="application-status-text")
+            else:
+                time_remaining = round_end_time - datetime.datetime.now(pytz.utc).replace(tzinfo=None)
                 time_remaining_total_seconds = max(0,int(round(time_remaining.total_seconds(), 0)))
                 time_remaining_minutes = int(math.floor(time_remaining_total_seconds/60))
                 time_remaining_seconds = time_remaining_total_seconds - time_remaining_minutes*60
-                return html.Div(f"Status: Collecting additional comments. Current total is {collection_count}. {time_remaining_minutes} minutes {time_remaining_seconds} seconds remaining.", className="application-status-text")
+                return html.Div(f"Status: Round {round_number} / {collection_round_count} is being run. {round_voters} people have voted so far with {time_remaining_minutes} minutes {time_remaining_seconds} seconds remaining.", className="application-status-text")
+        else:
+            if collection_status == "collecting":
+                if(collection_count is None):
+                    return html.Div("Loading....", className="application-status-text")
+                else:
+                    return html.Div(f"Status: Collecting a minimum number of comments ({collection_count} / {settings.minimum_comments_for_collection_to_proceed_to_timing}).", className="application-status-text")
+            elif collection_status == "waiting":
+                if(collection_end_time is None or collection_count is None):
+                    return html.Div("Loading....", className="application-status-text")
+                else:
+                    time_remaining = collection_end_time - datetime.datetime.now(pytz.utc).replace(tzinfo=None)
+                    time_remaining_total_seconds = max(0,int(round(time_remaining.total_seconds(), 0)))
+                    time_remaining_minutes = int(math.floor(time_remaining_total_seconds/60))
+                    time_remaining_seconds = time_remaining_total_seconds - time_remaining_minutes*60
+                    return html.Div(f"Status: Collecting additional comments. Current total is {collection_count}. {time_remaining_minutes} minutes {time_remaining_seconds} seconds remaining.", className="application-status-text")
 
 # set the next round state (if there is a new round) and save the old votes for displaying. 
 # when a new round is available, set the timer and update 'old votes' for display.
@@ -366,38 +378,38 @@ def update_application_status(n_intervals, switch_time):
 )
 def update_round_state(n_intervals, current_state, switch_time):
     database_state = database_interaction.get_current_state()
-    if(database_state.round_id != current_state["round_id"]):
-        # the round has changed.
-        current_time = datetime.datetime.now(pytz.utc).replace(tzinfo=None)
-        action = "nothing"
-        if(switch_time is None):
-            if (len(current_state["messages"]) > 0):
-                action = "set timer, get old votes"
+    if(not database_state is None):
+        if(database_state.round_id != current_state["round_id"]):
+            # the round has changed.
+            current_time = datetime.datetime.now(pytz.utc).replace(tzinfo=None)
+            action = "nothing"
+            if(switch_time is None):
+                if (len(current_state["messages"]) > 0):
+                    action = "set timer, get old votes"
+                else:
+                    action = "set new round"
             else:
-                action = "set new round"
-        else:
-            if(current_time >= datetime.datetime.fromisoformat(switch_time)):
-                action = "set new round"
-            else:
-                action = "nothing"
+                if(current_time >= datetime.datetime.fromisoformat(switch_time)):
+                    action = "set new round"
+                else:
+                    action = "nothing"
 
-        if(action=="set timer, get old votes"):
-            old_votes = database_interaction.get_the_average_votes_for_messages_in_round(current_state["message_ids"], current_state["round_id"])
-            old_votes = [round(v,1) for v in old_votes]
-            old_votes = old_votes + [0 for i in range(settings.round_comment_pool_size - len(old_votes))]
-            return dash.no_update, [dash.no_update for i in range(settings.round_comment_pool_size)], old_votes, current_time + datetime.timedelta(seconds=settings.time_to_show_results)
-        elif(action=="set new round"):
-            new_state = {}
-            new_state["round_id"] = database_state.round_id
-            messages = database_interaction.fetch_messages_in_round()
-            if(len(messages) == 1):
-                new_state["message_ids"] = []
-                new_state["messages"] = []
-            else:   
-                new_state["message_ids"] = [m.id for m in messages]
-                new_state["messages"] = [m.content for m in messages]
-            return new_state, [database_state.round_id for i in range(settings.round_comment_pool_size)], [dash.no_update for i in range(settings.round_comment_pool_size)], None
-
+            if(action=="set timer, get old votes"):
+                old_votes = database_interaction.get_the_average_votes_for_messages_in_round(current_state["message_ids"], current_state["round_id"])
+                old_votes = [round(v,1) for v in old_votes]
+                old_votes = old_votes + [0 for i in range(settings.round_comment_pool_size - len(old_votes))]
+                return dash.no_update, [dash.no_update for i in range(settings.round_comment_pool_size)], old_votes, current_time + datetime.timedelta(seconds=settings.time_to_show_results)
+            elif(action=="set new round"):
+                new_state = {}
+                new_state["round_id"] = database_state.round_id
+                messages = database_interaction.fetch_messages_in_round()
+                if(len(messages) == 1):
+                    new_state["message_ids"] = []
+                    new_state["messages"] = []
+                else:   
+                    new_state["message_ids"] = [m.id for m in messages]
+                    new_state["messages"] = [m.content for m in messages]
+                return new_state, [database_state.round_id for i in range(settings.round_comment_pool_size)], [dash.no_update for i in range(settings.round_comment_pool_size)], None
     raise dash.exceptions.PreventUpdate
 
 # sets the display of the voting messages (whether to show them, etc)
@@ -552,6 +564,7 @@ def add_votes(recaptcha_token, votes, round_data):
             }
         )
         result = response.json()
+        print("sending votes",str(result))
         if((result["success"] and result["score"] > 0.5) or app_config["debug"]==True):
             if(np.sum(np.abs(votes)) >0):
                 for i in range(len(round_data["message_ids"])):
