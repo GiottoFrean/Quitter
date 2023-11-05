@@ -336,22 +336,22 @@ def update_application_status(n_intervals, switch_time):
         round_number = state.round_number
 
         if round_status == "collecting":
-            return html.Div(f"Status: Round {round_number} / {collection_round_count} is being run. Waiting for minimum voters ({round_voters} / {settings.minimum_voters_for_round_to_proceed_to_timing})", className="application-status-text")
+            return html.Div(f"Status: Round {round_number} / {collection_round_count} is being run. Waiting for minimum voters ({round_voters} / {settings.minimum_voters_for_round_to_proceed_to_timing}).", className="application-status-text")
         elif round_status == "waiting":
             time_remaining = round_end_time - datetime.datetime.now(pytz.utc).replace(tzinfo=None)
             time_remaining_total_seconds = max(0,int(round(time_remaining.total_seconds(), 0)))
             time_remaining_minutes = int(math.floor(time_remaining_total_seconds/60))
             time_remaining_seconds = time_remaining_total_seconds - time_remaining_minutes*60
-            return html.Div(f"Status: Round {round_number} / {collection_round_count} is being run. {round_voters} people have voted so far with {time_remaining_minutes} minutes {time_remaining_seconds} seconds remaining", className="application-status-text")
+            return html.Div(f"Status: Round {round_number} / {collection_round_count} is being run. {round_voters} people have voted so far with {time_remaining_minutes} minutes {time_remaining_seconds} seconds remaining.", className="application-status-text")
         else:
             if collection_status == "collecting":
-                return html.Div(f"Status: Collecting a minimum number of comments ({collection_count} / {settings.minimum_comments_for_collection_to_proceed_to_timing})", className="application-status-text")
+                return html.Div(f"Status: Collecting a minimum number of comments ({collection_count} / {settings.minimum_comments_for_collection_to_proceed_to_timing}).", className="application-status-text")
             elif collection_status == "waiting":
                 time_remaining = collection_end_time - datetime.datetime.now(pytz.utc).replace(tzinfo=None)
                 time_remaining_total_seconds = max(0,int(round(time_remaining.total_seconds(), 0)))
                 time_remaining_minutes = int(math.floor(time_remaining_total_seconds/60))
                 time_remaining_seconds = time_remaining_total_seconds - time_remaining_minutes*60
-                return html.Div(f"Status: Collecting additional comments. Current total is {collection_count}. {time_remaining_minutes} minutes {time_remaining_seconds} seconds remaining", className="application-status-text")
+                return html.Div(f"Status: Collecting additional comments. Current total is {collection_count}. {time_remaining_minutes} minutes {time_remaining_seconds} seconds remaining.", className="application-status-text")
 
 # set the next round state (if there is a new round) and save the old votes for displaying. 
 # when a new round is available, set the timer and update 'old votes' for display.
