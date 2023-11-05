@@ -34,7 +34,7 @@ def next_round(session):
     # cut the number of messages down by the number each person sees in a round.
     new_round_count = math.ceil(current_round_count / settings.round_comment_pool_size)
     
-    # If the new round will by the final one, see if we can add another message to give people some options.
+    # If the new round will be the final one, see if we can add another message to give people some options.
     # Helps to avoid having just 2 messages in the final round.
     if(not new_round_count==1 and new_round_count<settings.round_comment_pool_size):
         removed_messages = current_round_count - new_round_count
@@ -58,6 +58,12 @@ def next_round(session):
     session.commit()
     return new_round
 
+def get_number_of_rounds_in_collection(number_of_messages, round_comment_pool_size):
+    number_of_rounds = 0
+    while(number_of_messages > 1):
+        number_of_rounds += 1
+        number_of_messages = math.ceil(number_of_messages / round_comment_pool_size)
+    return number_of_rounds
 
 def update_state(session):
     current_state = session.query(StateEntry).order_by(StateEntry.id.desc()).first()
@@ -81,12 +87,14 @@ def update_state(session):
             new_state.collection_status = "waiting"
             new_state.collection_count = messages_in_collection
             new_state.collection_end_time = current_time + datetime.timedelta(seconds=settings.additional_collection_time)
+            new_state.collection_round_count = current_state.collection_round_count
         else:
             # stay in collecting
             new_state.collection_id = current_collection.id
             new_state.collection_status = "collecting"
             new_state.collection_count = messages_in_collection
-            new_state.collection_end_time = None 
+            new_state.collection_end_time = None
+            new_state.collection_round_count = current_state.collection_round_count
     elif current_state.collection_status == "waiting":
         current_collection = session.query(Collection).order_by(Collection.id.desc()).first()
         messages_in_collection = len(current_collection.messages)
@@ -98,12 +106,14 @@ def update_state(session):
             new_state.collection_status = "collecting"
             new_state.collection_end_time = None
             new_state.collection_count = 0
+            new_state.collection_round_count = get_number_of_rounds_in_collection(messages_in_collection, settings.round_comment_pool_size)
         else:
             # stay in waiting
             new_state.collection_id = current_collection.id
             new_state.collection_status = "waiting"
             new_state.collection_end_time = current_state.collection_end_time
             new_state.collection_count = messages_in_collection
+            new_state.collection_round_count = current_state.collection_round_count
     else:
         raise Exception("Invalid collection status: " + current_state.collection_status)
 
@@ -115,6 +125,7 @@ def update_state(session):
             new_state.round_voters = 0
             new_state.round_end_time = None
             new_state.round_id = round.id
+            new_state.round_number = 1
         else:
             # stay in None obviously
             current_state.round_status = None
@@ -132,14 +143,16 @@ def update_state(session):
             # transition to waiting
             new_state.round_status = "waiting"
             new_state.round_voters = round_voters
-            new_state.round_end_time = current_time + datetime.timedelta(seconds=settings.additional_voting_time)
+            new_state.round_end_time = current_time + datetime.timedelta(seconds=int(settings.voting_time_all_rounds / current_state.collection_round_count))
             new_state.round_id = round.id
+            new_state.round_number = current_state.round_number
         else:
             # stay in collecting
             new_state.round_status = "collecting"
             new_state.round_voters = round_voters
             new_state.round_end_time = None
             new_state.round_id = round.id
+            new_state.round_number = current_state.round_number
     elif current_state.round_status == "waiting":
         if current_time >= current_state.round_end_time:
             # transition to new round
@@ -151,12 +164,14 @@ def update_state(session):
                 new_state.round_end_time = None
                 new_state.round_voters = None
                 new_state.round_id = None
+                new_state.round_number = current_state.round_number + 1
             else:
                 # continue
                 new_state.round_status = "collecting"
                 new_state.round_end_time = None
                 new_state.round_voters = 0
                 new_state.round_id = new_round.id
+                new_state.round_number = current_state.round_number + 1
         else:
             # stay in waiting
             round = session.query(Round).order_by(Round.id.desc()).first()
@@ -169,6 +184,7 @@ def update_state(session):
             new_state.round_end_time = current_state.round_end_time
             new_state.round_voters = round_voters
             new_state.round_id = current_state.round_id
+            new_state.round_number = current_state.round_number
     elif current_state.round_status == "completed":
         new_state.round_status = "completed"
         new_state.round_end_time = None
@@ -177,7 +193,7 @@ def update_state(session):
     else:
         raise Exception("Invalid round status: " + current_state.round_status)
     
-    state_str = f"collection_id: {new_state.collection_id}, collection_status: {new_state.collection_status}, collection_count: {new_state.collection_count}, collection_end_time: {new_state.collection_end_time}, round_status: {new_state.round_status}, round_voters: {new_state.round_voters}, round_end_time: {new_state.round_end_time}, round_id: {new_state.round_id}"
+    state_str = str(new_state.collection_id) + " " + new_state.collection_status + " " + str(new_state.collection_count) + " " + str(new_state.collection_end_time) + " Round: " + str(new_state.round_id) + " " + str(new_state.round_status) + " " + str(new_state.round_voters) + " " + str(new_state.round_end_time)
     print("Updating", time.time(), state_str)
     session.add(new_state)
     session.commit()
