@@ -13,7 +13,7 @@ import dash_extensions
 import json
 import plotly.graph_objects as go
 
-dash.register_page(__name__,path="/about")
+dash.register_page(__name__,path="/about", title="About")
 
 logo = html.Div(html.Img(src="/assets/logo.svg",className="logo-about"), className="logo-about-container")
 

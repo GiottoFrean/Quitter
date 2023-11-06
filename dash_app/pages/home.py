@@ -15,7 +15,7 @@ import math
 
 app_config = json.load(open("dash_app/app_config.json"))
 
-dash.register_page(__name__,path="/")
+dash.register_page(__name__,path="/", title="Quitter")
 
 # voting row is a row with a message, a voting square, and up/down vote buttons
 def make_voting_row(index):

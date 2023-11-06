@@ -25,6 +25,7 @@ app = dash.Dash(
         {"name": "viewport", "content": "width=device-width, initial-scale=1.0"},
     ],
     external_scripts=["https://www.google.com/recaptcha/api.js?render=_site-key".replace("_site-key",app_config["recaptcha_site_key"])],
+    update_title=None,
 )
 app._favicon = "logo.svg"
 app.title = "Quitter"
