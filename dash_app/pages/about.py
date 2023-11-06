@@ -207,9 +207,11 @@ explanation4 = dcc.Markdown(
     #### Why did you make this?
 
     So that I, *Giotto Frean*, can say I did it first, making 2 key innovations:
+    
     1. Only letting 1 post get published at a time.
     2. Using quadratic voting on a social media platform.
-    I hope to appear in some obscure text book in the future, 'The History of Social Media (revised, 2070 edition)'.
+    
+    I hope to appear in some obscure text book in the future, '*The History of Social Media (revised, 2070 edition)*'.
 
     #### I am Elon Musk and want to buy Quitter for $1 billion. Who do I contact?
 
