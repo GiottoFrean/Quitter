@@ -1,7 +1,6 @@
 import dash
 from dash import dcc, html, Input, Output, State
 import pandas as pd
-import sqlalchemy
 from dash_app.utils import database_interaction
 import dash_bootstrap_components as dbc
 import settings
@@ -189,7 +188,7 @@ show_more_modal = dbc.Modal(
     is_open=False
 )
 
-refresh_component = dcc.Interval(id='home-refresh-interval', interval=1000, n_intervals=0)
+refresh_component = dcc.Interval(id='home-refresh-interval', interval=5000, n_intervals=0)
 store_round_state = dcc.Store(id='store-round-state', data={"round_id":-1,"message_ids":[],"messages":[]})
 round_state_switch_time = dcc.Store(id='round-state-switch-time', data=None)
 
@@ -214,7 +213,7 @@ dash.clientside_callback(
         var messageInput = document.querySelector('#message-input');
         if (messageInput) {
             messageInput.addEventListener('keydown', function (e) {
-                if (e.keyCode === 13 && !e.shiftKey) {
+                if (e.keyCode === 13 && !e.shiftKey && window.innerWidth > 700) {
                     e.preventDefault();
                 }
             });
@@ -231,7 +230,7 @@ dash.clientside_callback(
 dash.clientside_callback(
     """
     function(n_events, send_clicks, enterEvent, text, send_clicks_store) {
-        if (enterEvent && enterEvent.key === "Enter" && !enterEvent.shiftKey) {
+        if (enterEvent && enterEvent.key === "Enter" && !enterEvent.shiftKey && window.innerWidth > 700) { // enter key pressed & not on a phone
             return [{"message": text}, send_clicks];
         } else if (send_clicks > send_clicks_store) {
             return [{"message": text}, send_clicks];
@@ -310,6 +309,7 @@ def send_message(recaptcha_token, message):
         print("sending message",str(result))
         if((result["success"] and result["score"] > 0.5) or app_config["debug"]==True):
             database_interaction.add_comment(message)
+    
     return dash.no_update
 
 # update the application status (stuff at the top of the page)

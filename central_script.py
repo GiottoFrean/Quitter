@@ -209,4 +209,4 @@ if __name__ == "__main__":
         session = SessionLocal()
         update_state(session)
         session.close()
-        time.sleep(1)
+        time.sleep(1) # just so the database isn't always being accessed.

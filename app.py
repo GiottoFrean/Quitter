@@ -27,6 +27,7 @@ app = dash.Dash(
     external_scripts=["https://www.google.com/recaptcha/api.js?render=_site-key".replace("_site-key",app_config["recaptcha_site_key"])],
 )
 app._favicon = "logo.svg"
+app.title = "Quitter"
 
 navbar = html.Div(
     id="fixed-header-bar",
