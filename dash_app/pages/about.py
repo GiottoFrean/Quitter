@@ -17,53 +17,88 @@ dash.register_page(__name__,path="/about")
 
 logo = html.Div(html.Img(src="/assets/logo.svg",className="logo-about"), className="logo-about-container")
 
-explanation1 = dcc.Markdown(
-    r'''
+# explanation1 = dcc.Markdown(
+#     r'''
     
-    Welcome to Quitter, a unique social media platform powered by quadratic voting.
+#     Welcome to Quitter, a unique social media platform powered by quadratic voting.
 
-    #### How does it work?
+#     #### How does it work?
 
-    Quitter removes the traditional 'like' system and replaces it with a voting mechanism.
-    Posts are thinned down in a series of rounds, with a single one being left at the end.
-    This is done using in a way which incentivises you to vote in accordance with your actual preferences. 
+#     Quitter removes the traditional 'like' system and replaces it with a voting mechanism.
+#     Posts are thinned down in a series of rounds, with a single one being left at the end.
+#     This is done using in a way which incentivises you to vote in accordance with your actual preferences. 
 
-    #### Why is this a good idea?
+#     #### Why is this a good idea?
 
-    Quitter addresses several issues prevalent in conventional social media platforms:
+#     Quitter addresses several issues prevalent in conventional social media platforms:
 
-    - **Overwhelming content:** Quitter filters through the noise, guiding you towards content that truly matters.
-    - **Bias towards frequent users:** Quitter ensures that content promotion is not skewed towards those who use the platform most often. Each user has a fixed influence. 
-    - **Quality over popularity:** Content is promoted based on its merit, not the popularity of the author, as all posts are anonmyous. 
-    - **Authentic measurement:** By using quadratic voting Quitter avoids being skewed by a small group of users, while also avoiding the tyranny of the majority.
+#     - **Overwhelming content:** Quitter filters through the noise, guiding you towards content that truly matters.
+#     - **Bias towards frequent users:** Quitter ensures that content promotion is not skewed towards those who use the platform most often. Each user has a fixed influence. 
+#     - **Quality over popularity:** Content is promoted based on its merit, not the popularity of the author, as all posts are anonmyous. 
+#     - **Authentic measurement:** By using quadratic voting Quitter avoids being skewed by a small group of users, while also avoiding the tyranny of the majority.
     
-    #### How does the quadratic voting system work?
+#     #### How does the quadratic voting system work?
 
-    You get 100 voting 'credits' per round, and you can spend them on any candidate post.
-    The number of votes you give is the square root of the number of credits you spend.
-    This means you can give 1 credit for 1 vote, 4 credits for 2 votes, 9 credits for 3 votes etc.
-    In other words, the marginal cost of adding another vote is 2 more credits than the previous vote.
-    You can also give negative votes to posts you don't like.
+#     You get 100 voting 'credits' per round, and you can spend them on any candidate post.
+#     The number of votes you give is the square root of the number of credits you spend.
+#     This means you can give 1 credit for 1 vote, 4 credits for 2 votes, 9 credits for 3 votes etc.
+#     In other words, the marginal cost of adding another vote is 2 more credits than the previous vote.
+#     You can also give negative votes to posts you don't like.
 
-    #### Why does this work?
+#     #### Why does this work?
 
-    It makes you spend your votes in proportion to how good you think each post is.
-    If you just had 10 votes to spend you would them all on the post you like the most. 
-    Quadratic voting means there are alternatives - you could spend 8 on your favorite and 6 on your second favorite.
-    The tyranny of the majority is also avoided - consider if there were 3 candidates A, B and C.
-    Say 51% of people give A a rating of 10/10, then B 8/10 and C 0/10. 
-    The other 49% give C 10/10 then B 8/10, and A 0/10.
-    In a normal election A would win, as the 51% would give their votes to A.
-    This would not be optimal as 49% of people would be very unhappy.
-    With quadratic voting B would win, as both the 51% and the 49% would give a significant number of votes to B.
-    ''',
-    mathjax=True
-)
+#     It makes you spend your votes in proportion to how good you think each post is.
+#     If you just had 10 votes to spend you would them all on the post you like the most. 
+#     Quadratic voting means there are alternatives - you could spend 8 on your favorite and 6 on your second favorite.
+#     The tyranny of the majority is also avoided - consider if there were 3 candidates A, B and C.
+#     Say 51% of people give A a rating of 10/10, then B 8/10 and C 0/10. 
+#     The other 49% give C 10/10 then B 8/10, and A 0/10.
+#     In a normal election A would win, as the 51% would give their votes to A.
+#     This would not be optimal as 49% of people would be very unhappy.
+#     With quadratic voting B would win, as both the 51% and the 49% would give a significant number of votes to B.
+#     ''',
+#     mathjax=True
+# )
+
+explanation1 = html.Div([
+    html.P('Welcome to Quitter, a unique social media platform powered by quadratic voting.'),
+    html.H4('How does it work?'),
+    html.P('Quitter removes the traditional \'like\' system and replaces it with a voting mechanism. '
+            'Posts are thinned down in a series of rounds, with a single one being left at the end. '
+            'This is done using in a way which incentivises you to vote in accordance with your actual preferences.'),
+
+    html.H4('Why is this a good idea?'),
+    html.P('Quitter addresses several issues prevalent in conventional social media platforms:'),
+    dcc.Markdown(
+        '''
+        - **Overwhelming content:** On Quitter only the stuff that matters is makes it, no more reading unfiltered rubbish.
+        - **Bias towards frequent users:** On Quitter every user has a fixed influence.
+        - **Popularity over quality:** As all posts are anonmyous content is promoted based on its merit, not the popularity of the author.
+        - **Tyannies:** Quitter doesn't risk being skewed by a tiny group of users, while also avoiding capture by a majority, thanks to quadratic voting.
+        '''
+    ),
+    html.H4('What is the quadratic voting system?'),
+    html.P('You get 100 voting \'credits\' per round, and you can spend them on any candidate post. '
+            'The number of votes you give is the square root of the number of credits you spend. '
+            'This means you can give 1 credit for 1 vote, 4 credits for 2 votes, 9 credits for 3 votes etc. '
+            'In other words, the marginal cost of adding another vote is 2 more credits than the previous vote. '
+            'You can also give negative votes to posts you don\'t like.'),
+    html.H4('Why does it work?'),
+    html.P('It makes you spend your votes in proportion to how good you think each post is. '
+            'If you just had 10 votes to spend you would them all on the post you like the most, as every vote makes it slightly more likely to win.'
+            'Quadratic voting means there are alternatives - you could spend 8 on your favorite and 6 on your second favorite. '
+            'The tyranny of the majority is also avoided - consider if there were 3 candidates A, B and C. '
+            'Say 51% of people give A a rating of 10/10, then B 8/10 and C 0/10. '
+            'The other 49% give C 10/10 then B 8/10, and A 0/10. '
+            'In a normal election A would win, as the 51% would give their votes to A. '
+            'This would not be optimal as 49% of people would be very unhappy. '
+            'With quadratic voting B would win, as both the 51% and the 49% would give a significant number of votes to B.')
+])
 
 explanation2 = dcc.Markdown(
     r'''
 
-    #### Why does this work? - For the mathematically inclined
+    #### Why does it work? - For the mathematically inclined
 
     Imagine there is an election being run to decide between $n$ candidates. 
     Let the vector $u$ represent the utility you place on each candidate, where $u_i$ is the benefit you get from candidate $i$ winning. 
@@ -171,8 +206,10 @@ explanation4 = dcc.Markdown(
 
     #### Why did you make this?
 
-    So that I, *Giotto Frean*, can say I did it first.
-    And maybe appear in some obscure text book in the future, 'The History of Social Media (revised, 2070 edition)'.
+    So that I, *Giotto Frean*, can say I did it first, making 2 key innovations:
+    1. Only letting 1 post get published at a time.
+    2. Using quadratic voting on a social media platform.
+    I hope to appear in some obscure text book in the future, 'The History of Social Media (revised, 2070 edition)'.
 
     #### I am Elon Musk and want to buy Quitter for $1 billion. Who do I contact?
 
