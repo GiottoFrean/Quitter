@@ -19,7 +19,7 @@ app = dash.Dash(
         {"http-equiv": "content-language", "content": "en"},
         {
             "name": "description",
-            "content": "Quitter",
+            "content": "Quadratic voting twitter",
         },
         {"http-equiv": "X-UA-Compatible", "content": "IE=edge"},
         {"name": "viewport", "content": "width=device-width, initial-scale=1.0"},
@@ -54,6 +54,10 @@ server = app.server
 app.layout = html.Div([
     html.Meta(name='description', content='Quadratic voting twitter'),
     html.Title('Quitter'),
+    html.Meta(name="og:title", content="Quitter"),
+    html.Meta(name="og:description", content="Quadratic voting twitter"),
+    html.Meta(name="og:image", content="https://quitter.app/assets/logo.svg"),
+    html.Meta(name="og:url", content="https://quitter.app/"),
     html.Div(
         children=[
             html.Link(href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css', rel='stylesheet'),
