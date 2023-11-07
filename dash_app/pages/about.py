@@ -100,17 +100,18 @@ explanation2 = dcc.Markdown(
 
     #### Why does it work? - For the mathematically inclined
 
-    Imagine there is an election being run to decide between $n$ candidates. 
-    Let the vector $u$ represent the utility you place on each candidate, where $u_i$ is the benefit you get from candidate $i$ winning. 
-    We assume that $u$ is normalized such that you expect to get 0 utility from the election without casting a vote. 
-    Let $x$ also be a vector of length $n$ where $x_i$ is the number of votes you put towards candidate $i$. 
-    You can have negative votes, which count against a candidate. 
-    Assuming you don't know how other people have voted, then each vote you cast changes the likelihood of a candidate winning by some probability $p$. 
-    If this is the case your utility of voting, $t$, is set $t = p x \cdot u$. 
+    Imagine there is an election being run to decide between $n$ candidates.
+    Say you don't really know how other people will vote.
+    Then each vote you cast for a candidate $i$ has a fixed utility - a slightly higher chance of that candidate winning.
+    Let the vector $u$ represent those utilities.
+    $u_i$ is proportionate to the (relative) benefit you would get from candidate $i$ winning. 
+    Let $x$ also be a vector of length $n$ where $x_i$ is the number of votes you put towards candidate $i$.
+    You can vote multiple times and have negative votes, which count against a candidate. 
+    Your marginal utility of voting, $t$, is then set $t = x \cdot u$. 
     This is a plane which intersects at $0$ when $x=\vec{0}$.
 
     Quadratic voting limits the number of votes you can place by setting the constraint that $\sum_i x_i^2 < c$ for some constant $c$. 
-    This effectively means that any rational voter will have $x$ such that it lies in the circle $\sum_i x_i^2 = c$, assuming they don't want to waste votes. 
+    This effectively means that any rational voter will have $x$ such that it lies in the circle $\sum_i x_i^2 = c$, given they don't want to waste votes. 
     The highest $t$ on the plane satisfying this constraint is at $x=\sqrt{c}\frac{u}{|u|}$, meaning you are incentivized to vote exactly in accordance with your normalized utility. 
     To illustrate this we will use a 2D example.
 
@@ -187,15 +188,26 @@ explanation3 = dcc.Markdown(
     $$
 
     Effectively, this means $x_2$ is $u_2$ times a constant.
-    Pluggin back into equation 2 gives the same for $x_1$.
+    Plugging back into equation 2 gives the same for $x_1$.
     For solving in higher dimensions, the same answer can be arrived at using Lagrange multipliers.
+
+    Note: 
+    This logic doesn't hold if you drop the assumption that you don't know how other people will vote. 
+    If you know nobody else will vote for a candidate, you will still have an incentive not vote for them either.
+    A possible fix is to use randomness to make it so that each vote for a candidate increases the chance of that candidate winning very slightly, but that isn't implemented here.
     ''',
     mathjax=True
 )
 
 explanation4 = dcc.Markdown(
     r'''
+    
+    #### Do all users see the same posts?
 
+    Only in the final round.
+    In other rounds the posts you see are randomly selected.
+    Votes are then normalised by the number of people who saw the post.
+    
     #### This site looks great, but is it built well under the hood?
 
     No. 
@@ -206,12 +218,7 @@ explanation4 = dcc.Markdown(
 
     #### Why did you make this?
 
-    So that I, *Giotto Frean*, can say I did it first, making 2 key innovations:
-    
-    1. Only letting 1 post get published at a time.
-    2. Using quadratic voting on a social media platform.
-    
-    I hope to appear in some obscure text book in the future, '*The History of Social Media (revised, 2070 edition)*'.
+    So that I, *Giotto Frean*, can say I did it first, and maybe appear in some obscure text book in the future, '*The History of Social Media (revised, 2070 edition)*'.
 
     #### I am Elon Musk and want to buy Quitter for $1 billion. Who do I contact?
 
