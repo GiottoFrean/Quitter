@@ -433,7 +433,6 @@ dash.clientside_callback(
     """
     function(upvote_nclicks, downvote_nclicks, round_id, last_votes, all_votes, clicked_votes, up_clicks_old, down_clicks_old, round_id_old, old_last_votes) {
         var square_size_px = 8;
-        console.log(last_votes, old_last_votes);
         if(round_id != round_id_old){
             return [0, upvote_nclicks, downvote_nclicks, 0, {"width": "0px", "height": "0px"}, round_id, last_votes];
         } else if (old_last_votes != last_votes) {
@@ -501,7 +500,7 @@ dash.clientside_callback(
         let credit = 100 - votes.reduce((a, b) => a + b*b, 0);
         let credit_width = Math.floor(credit / 5);
         let number_of_row_with_extra_credit = credit % 5;
-        let credit_markers = Array.from({length: 5}, (_, i) => i < number_of_row_with_extra_credit ? {width: `${(credit_width+1)*square_size_px+2}px`, height: `${square_size_px+2}px`} : {width: `${credit_width*square_size_px+1}px`, height: `${square_size_px+1}px`});
+        let credit_markers = Array.from({length: 5}, (_, i) => i < number_of_row_with_extra_credit ? {width: `${(credit_width+1)*square_size_px+2}px`, height: `${square_size_px+1}px`} : {width: `${credit_width*square_size_px+1}px`, height: `${square_size_px+1}px`});
         return credit_markers;
     }
     """,
