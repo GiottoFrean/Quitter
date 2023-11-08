@@ -190,6 +190,10 @@ explanation4 = dcc.Markdown(
 
     So that I, *Giotto Frean*, can say I did it first, and maybe appear in some obscure text book in the future, '*The History of Social Media (revised, 2070 edition)*'.
 
+    #### Is there some source code somewhere?
+
+    Yes, it's on github [here](https://github.com/GiottoFrean/Quitter)
+
     #### I am Elon Musk and want to buy Quitter for $1 billion. Who do I contact?
 
     quitterceo@gmail.com
