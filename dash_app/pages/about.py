@@ -205,7 +205,7 @@ explanation4 = dcc.Markdown(
 layout = html.Div(
     html.Div(
         [
-            #logo,
+            logo,
             explanation1,
             explanation2,
             figure1,
