@@ -26,15 +26,24 @@ explanation1 = html.Div([
 
     html.H4('Why is this a good idea?'),
     html.P('Quitter addresses several issues prevalent in conventional social media platforms:'),
-    dcc.Markdown(
-        r'''
-        - **Overwhelming content:** On Quitter only the stuff that matters makes it, no more reading unfiltered rubbish.
-        - **Bias towards frequent users:** On Quitter every user has a fixed influence in the voting process. Other platforms let users like as much as they want. 
-        - **Popularity over quality:** As all posts are anonmyous content is promoted based on its merit, not the popularity of the author.
-        - **Tyannies:** Quitter doesn't risk being skewed by a tiny group of users, while also avoiding capture by a majority, thanks to quadratic voting.
-        ''',
-        mathjax=True
-    ),
+    html.Ul([
+        html.Li([
+            html.Strong("Overwhelming content:"),
+            " On Quitter only the stuff that matters makes it, no more reading unfiltered rubbish."
+        ]),
+        html.Li([
+            html.Strong("Bias towards frequent users:"),
+            " On Quitter every user has a fixed influence in the voting process. Other platforms let users like as much as they want."
+        ]),
+        html.Li([
+            html.Strong("Popularity over quality:"),
+            " As all posts are anonymous, content is promoted based on its merit, not the popularity of the author."
+        ]),
+        html.Li([
+            html.Strong("Tyrannies:"),
+            " Quitter doesn't risk being skewed by a tiny group of users, while also avoiding capture by a majority, thanks to quadratic voting."
+        ])
+    ]),
     html.H4('What is the quadratic voting system?'),
     html.P('You get 100 voting \'credits\' per round, and you can spend them on any candidate post. '
             'The number of votes you give is the square root of the number of credits you spend. '
