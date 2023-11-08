@@ -60,8 +60,8 @@ explanation2 = dcc.Markdown(
     Imagine there is an election being run to decide between $n$ candidates.
     Say you don't really know how other people will vote.
     Then each vote you cast for a candidate $i$ has a fixed utility - a slightly higher chance of that candidate winning.
-    Let the vector $u$ represent those utilities.
-    $u_i$ is proportionate to the (relative) benefit you would get from candidate $i$ winning. 
+    Let the vector $u$ represent those utilities, with $u_i$ being the utility of voting for candidate $i$.
+    $u$ is proportionate to the (relative) benefit you would get from each candidate winning. 
     Let $x$ also be a vector of length $n$ where $x_i$ is the number of votes you put towards candidate $i$.
     You can vote multiple times and have negative votes, which count against a candidate. 
     Your marginal utility of voting, $t$, is then set $t = x \cdot u$. 
