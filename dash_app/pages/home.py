@@ -436,8 +436,8 @@ dash.clientside_callback(
             return [0, upvote_nclicks, downvote_nclicks, 0, {"width": "0px", "height": "0px"}, round_id, last_votes];
         } else if (old_last_votes != last_votes) {
             var vote_marker = {
-                "width": Math.abs(last_votes)*square_size_px + "px", 
-                "height": Math.abs(last_votes)*square_size_px + "px", 
+                "width": Math.abs(last_votes)*square_size_px+1 + "px", 
+                "height": Math.abs(last_votes)*square_size_px+1 + "px", 
                 "backgroundColor": (last_votes > 0) ? "#497462" : "#ee2a12", 
                 "left": (last_votes < 0) ? 0 : null,
                 "top": (last_votes < 0) ? 0 : null,
@@ -457,8 +457,8 @@ dash.clientside_callback(
             var credit_margin_required = proposed_new_votes ** 2 - clicked_votes ** 2;
             var final_votes = (spare_credits >= credit_margin_required) ? proposed_new_votes : clicked_votes;
             var vote_marker = {
-                "width": Math.abs(final_votes)*square_size_px + "px", 
-                "height": Math.abs(final_votes)*square_size_px + "px", 
+                "width": Math.abs(final_votes)*square_size_px+1 + "px", 
+                "height": Math.abs(final_votes)*square_size_px+1 + "px", 
                 "backgroundColor": (final_votes > 0) ? "#497462" : "#ee2a12", 
                 "left": (final_votes < 0) ? 0 : null,
                 "top": (final_votes < 0) ? 0 : null,
