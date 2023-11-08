@@ -58,6 +58,12 @@ app.layout = html.Div([
     html.Meta(name="og:description", content="Quadratic voting twitter"),
     html.Meta(name="og:image", content="https://quitter.app/assets/logo.svg"),
     html.Meta(name="og:url", content="https://quitter.app/"),
+    html.Meta(name="twitter:card", content="summary_large_image"),
+    html.Meta(name="twitter:site", content="@Quitter_app"),
+    html.Meta(name="twitter:title", content="Quitter"),
+    html.Meta(name="twitter:description", content="Quadratic voting twitter"),
+    html.Meta(name="twitter:image", content="https://quitter.app/assets/logo.svg"),
+    html.Meta(name="twitter:url", content="https://quitter.app/"),
     html.Div(
         children=[
             html.Link(href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css', rel='stylesheet'),
