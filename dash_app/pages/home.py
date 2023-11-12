@@ -114,9 +114,10 @@ credit_and_voting_layout = html.Div(
             [
                 html.Div(
                     [
-                        html.Div(html.Div([make_credit_row(index) for index in range(5)]), className="credits-container"),
+                        html.Div(html.Div([make_credit_row(index) for index in range(settings.round_comment_pool_size)]), className="credits-container"),
                         dbc.Button("Send votes", id="send-votes-button", className="send-votes-button", n_clicks=0, color="none"),
                         dcc.Store(id="send-votes", data=None),
+                        dcc.Store(id="last-round-voted-store", data=None, storage_type="local"),
                         dcc.Store(id="recaptcha-send-votes", data=None),
                         html.Div(id="send-votes-output")
                     ],
@@ -509,19 +510,26 @@ dash.clientside_callback(
 
 @dash.callback(
     Output('send-votes', 'data'),
+    Output('last-round-voted-store', 'data'),
     Output("send-votes-button", "disabled"),
     Output({"type":"downvote-button","index":dash.ALL}, "disabled"),
     Output({"type":"upvote-button","index":dash.ALL}, "disabled"),
     [Input('send-votes-button', 'n_clicks'), Input('store-round-state', 'data')],
     State({"type":"votes-store","index":dash.ALL}, "data"),
+    State('last-round-voted-store', 'data')
 )
-def send_votes_and_enable_buttons(vote_send_clicks, round_data, votes):
+def send_votes_and_enable_buttons(vote_send_clicks, round_data, votes, last_round_voted):
     ctx = dash.callback_context
     if(ctx.triggered_id == "send-votes-button"):
-        return votes, True, [True for i in range(settings.round_comment_pool_size)], [True for i in range(settings.round_comment_pool_size)]
+        return votes, round_data["round_id"], True, [True for i in range(settings.round_comment_pool_size)], [True for i in range(settings.round_comment_pool_size)]
     else: # triggered by store-round-state
-        is_row_disabled = [False if m < len(round_data["message_ids"]) else True for m in range(settings.round_comment_pool_size)]
-        return dash.no_update, False, is_row_disabled, is_row_disabled
+        # But you have already voted on this round, so disable the buttons
+        if(round_data["round_id"] == last_round_voted):
+            return dash.no_update, dash.no_update, True, [True for i in range(settings.round_comment_pool_size)], [True for i in range(settings.round_comment_pool_size)]
+        else:
+            # disable the options which aren't available. 
+            is_row_disabled = [False if m < len(round_data["message_ids"]) else True for m in range(settings.round_comment_pool_size)]
+            return dash.no_update, dash.no_update, False, is_row_disabled, is_row_disabled
 
 
 # update the recaptcha data store when send-votes is updated. The first time this will be empty. 
