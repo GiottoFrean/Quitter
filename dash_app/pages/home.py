@@ -189,7 +189,7 @@ show_more_modal = dbc.Modal(
     is_open=False
 )
 
-refresh_component = dcc.Interval(id='home-refresh-interval', interval=5000, n_intervals=0)
+refresh_component = dcc.Interval(id='home-refresh-interval', interval=1000, n_intervals=0)
 store_round_state = dcc.Store(id='store-round-state', data={"round_id":-1,"message_ids":[],"messages":[]})
 round_state_switch_time = dcc.Store(id='round-state-switch-time', data=None)
 
