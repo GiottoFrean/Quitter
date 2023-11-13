@@ -379,21 +379,24 @@ def update_application_status(n_intervals, switch_time):
 def update_round_state(n_intervals, current_state, switch_time):
     database_state = database_interaction.get_current_state()
     if(not database_state is None):
+        print(database_state.round_id, current_state["round_id"])
         if(database_state.round_id != current_state["round_id"]):
             # the round has changed.
             current_time = datetime.datetime.now(pytz.utc).replace(tzinfo=None)
             action = "nothing"
             if(switch_time is None):
-                if (len(current_state["messages"]) > 0):
+                if (len(current_state["messages"]) > 1):
                     action = "set timer, get old votes"
                 else:
                     action = "set new round"
+                    print("A")
             else:
                 if(current_time >= datetime.datetime.fromisoformat(switch_time)):
                     action = "set new round"
+                    print("B")
                 else:
                     action = "nothing"
-
+            print(action)
             if(action=="set timer, get old votes"):
                 old_votes = database_interaction.get_the_average_votes_for_messages_in_round(current_state["message_ids"], current_state["round_id"])
                 old_votes = [round(v,1) for v in old_votes]
@@ -403,7 +406,7 @@ def update_round_state(n_intervals, current_state, switch_time):
                 new_state = {}
                 new_state["round_id"] = database_state.round_id
                 messages = database_interaction.fetch_messages_in_round()
-                if(len(messages) == 1):
+                if(len(messages) == 0):
                     new_state["message_ids"] = []
                     new_state["messages"] = []
                 else:   
@@ -420,12 +423,16 @@ def update_round_state(n_intervals, current_state, switch_time):
     [Input("store-round-state", "data")],
 )
 def update_voting_stuff(state):
-    messages = state.get("messages", [])
-    content = [messages[m] if m < len(messages) else "" for m in range(settings.round_comment_pool_size)]
-    rows_open = [True if m < len(messages) else False for m in range(settings.round_comment_pool_size)]
-    rows_classnames = ["voting-row show" if o else "voting-row hide" for o in rows_open]
-    show_credit_and_voting_button = True if len(messages) > 0 else False
-    credit_and_voting_classname = "credits-and-vote-show-hide-wrapper show" if show_credit_and_voting_button else "credits-and-vote-show-hide-wrapper hide"
+    messages = state["messages"]
+    if(len(messages) == 1):
+        # round is done, only 1 message left. 
+        content = ["" for m in range(settings.round_comment_pool_size)]
+        rows_classnames = ["voting-row hide" for m in range(settings.round_comment_pool_size)]
+        credit_and_voting_classname = "credits-and-vote-show-hide-wrapper hide"
+    else:
+        content = [messages[m] if m < len(messages) else "" for m in range(settings.round_comment_pool_size)]
+        rows_classnames = ["voting-row show" if m<len(messages) else "voting-row hide" for m in range(settings.round_comment_pool_size)]
+        credit_and_voting_classname = "credits-and-vote-show-hide-wrapper show"
     return content, rows_classnames, credit_and_voting_classname
 
 
@@ -584,6 +591,7 @@ def add_votes(recaptcha_token, votes, round_data):
     State('previous-messages', 'children'),
 )
 def update_previous_messages(round_state, show_more_clicks, previous_messages):
+    print(round_state)
     # get the messages with the most votes for each collection, based on the final round votes.
     ctx = dash.callback_context
     if(ctx.triggered_id == "show-more-button"):
@@ -593,14 +601,12 @@ def update_previous_messages(round_state, show_more_clicks, previous_messages):
         if(previous_messages is None):
             messages = database_interaction.fetch_top_messages()
             return [html.Div(html.Div(message.content, className="message-text-previous"),className="message-container-previous") for message in messages]
-        elif(len(round_state["messages"]) == 0): # round has just been updated, so add the top message
+        elif(not round_state["round_id"] is None and len(round_state["messages"])==1): # last round has just ended
             messages = database_interaction.fetch_top_messages(1)
             if(len(messages) > 0):
                 return [html.Div(html.Div(messages[0].content, className="message-text-previous"),className="message-container-previous")] + previous_messages
-            else:
-                return dash.no_update
-        else:
-            return dash.no_update
+    
+    raise dash.exceptions.PreventUpdate
 
 
 @dash.callback(

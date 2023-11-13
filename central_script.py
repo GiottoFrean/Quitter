@@ -145,7 +145,7 @@ def update_state(session):
             # transition to waiting
             new_state.round_status = "waiting"
             new_state.round_voters = round_voters
-            new_state.round_end_time = current_time + datetime.timedelta(seconds=int(settings.voting_time_all_rounds / current_state.collection_round_count))
+            new_state.round_end_time = current_time + datetime.timedelta(seconds=int(settings.voting_time_all_rounds / max(current_state.collection_round_count,1)))
             new_state.round_id = round.id
             new_state.round_number = current_state.round_number
         else:
