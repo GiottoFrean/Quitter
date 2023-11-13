@@ -139,6 +139,7 @@ previous_messages_layout = html.Div(
         html.Div("Previous messages", className="previous-messages-title"),
         html.Div(
             id="previous-messages",
+            children = [],
             className="previous-messages"
         ),
         html.Div([dbc.Button("Show more", id="show-more-button", className="show-more-button", n_clicks=0, color="none")],className="show-more-button-container")
@@ -257,6 +258,7 @@ dash.clientside_callback(
     [Input('message-data-store', 'data')]
 )
 def check_message(message_data):
+    print("checking message",message_data)
     if(not message_data == None):
         message = message_data["message"]
         lines = message.split('\n')
@@ -265,7 +267,8 @@ def check_message(message_data):
         else:
             if(len(message) > 0):
                 return None, "", message
-    return dash.no_update, dash.no_update, dash.no_update
+    
+    raise dash.exceptions.PreventUpdate
 
 
 # update the recaptcha data store when message-send is updated. The first time this will be empty. 
@@ -379,7 +382,6 @@ def update_application_status(n_intervals, switch_time):
 def update_round_state(n_intervals, current_state, switch_time):
     database_state = database_interaction.get_current_state()
     if(not database_state is None):
-        print(database_state.round_id, current_state["round_id"])
         if(database_state.round_id != current_state["round_id"]):
             # the round has changed.
             current_time = datetime.datetime.now(pytz.utc).replace(tzinfo=None)
@@ -389,14 +391,11 @@ def update_round_state(n_intervals, current_state, switch_time):
                     action = "set timer, get old votes"
                 else:
                     action = "set new round"
-                    print("A")
             else:
                 if(current_time >= datetime.datetime.fromisoformat(switch_time)):
                     action = "set new round"
-                    print("B")
                 else:
                     action = "nothing"
-            print(action)
             if(action=="set timer, get old votes"):
                 old_votes = database_interaction.get_the_average_votes_for_messages_in_round(current_state["message_ids"], current_state["round_id"])
                 old_votes = [round(v,1) for v in old_votes]
@@ -424,7 +423,7 @@ def update_round_state(n_intervals, current_state, switch_time):
 )
 def update_voting_stuff(state):
     messages = state["messages"]
-    if(len(messages) == 1):
+    if(len(messages) <= 1):
         # round is done, only 1 message left. 
         content = ["" for m in range(settings.round_comment_pool_size)]
         rows_classnames = ["voting-row hide" for m in range(settings.round_comment_pool_size)]
@@ -577,7 +576,6 @@ def add_votes(recaptcha_token, votes, round_data):
             }
         )
         result = response.json()
-        print("sending votes",str(result))
         if((result["success"] and result["score"] > 0.5) or app_config["debug"]==True):
             if(np.sum(np.abs(votes)) >0):
                 for i in range(len(round_data["message_ids"])):
@@ -591,22 +589,20 @@ def add_votes(recaptcha_token, votes, round_data):
     State('previous-messages', 'children'),
 )
 def update_previous_messages(round_state, show_more_clicks, previous_messages):
-    print(round_state)
     # get the messages with the most votes for each collection, based on the final round votes.
     ctx = dash.callback_context
-    if(ctx.triggered_id == "show-more-button"):
-        messages = database_interaction.fetch_top_messages(offset=len(previous_messages))
-        return previous_messages + [html.Div(html.Div(message.content, className="message-text-previous"),className="message-container-previous") for message in messages]
-    elif(ctx.triggered_id == "store-round-state"):
-        if(previous_messages is None):
-            messages = database_interaction.fetch_top_messages()
-            return [html.Div(html.Div(message.content, className="message-text-previous"),className="message-container-previous") for message in messages]
-        elif(not round_state["round_id"] is None and len(round_state["messages"])==1): # last round has just ended
-            messages = database_interaction.fetch_top_messages(1)
-            if(len(messages) > 0):
-                return [html.Div(html.Div(messages[0].content, className="message-text-previous"),className="message-container-previous")] + previous_messages
-    
-    raise dash.exceptions.PreventUpdate
+    if previous_messages is None:
+        previous_messages = []
+
+    if ctx.triggered_id == "store-round-state" and round_state["round_id"] is None and not len(previous_messages) == 0:
+        # new winner
+        new_messages = database_interaction.fetch_top_messages(count=1,offset=0)
+        new_content = [html.Div(html.Div(m.content, className="message-text-previous"),className="message-container-previous") for m in new_messages if not m is None]
+        return new_content + previous_messages
+    else:
+        new_messages = database_interaction.fetch_top_messages(count=10,offset=show_more_clicks*10)
+        new_content = [html.Div(html.Div(m.content, className="message-text-previous"),className="message-container-previous") for m in new_messages if not m is None]
+        return previous_messages + new_content
 
 
 @dash.callback(
