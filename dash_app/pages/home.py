@@ -190,7 +190,7 @@ show_more_modal = dbc.Modal(
     is_open=False
 )
 
-refresh_component = dcc.Interval(id='home-refresh-interval', interval=1000, n_intervals=0)
+refresh_component = dcc.Interval(id='home-refresh-interval', interval=5000, n_intervals=0)
 store_round_state = dcc.Store(id='store-round-state', data={"round_id":-1,"message_ids":[],"messages":[]})
 round_state_switch_time = dcc.Store(id='round-state-switch-time', data=None)
 
@@ -349,9 +349,8 @@ def update_application_status(n_intervals, switch_time):
             else:
                 time_remaining = round_end_time - datetime.datetime.now(pytz.utc).replace(tzinfo=None)
                 time_remaining_total_seconds = max(0,int(round(time_remaining.total_seconds(), 0)))
-                time_remaining_minutes = int(math.floor(time_remaining_total_seconds/60))
-                time_remaining_seconds = time_remaining_total_seconds - time_remaining_minutes*60
-                return html.Div(f"Status: Round {round_number} / {collection_round_count} is being run. {round_voters} people have voted so far with {time_remaining_minutes} minutes {time_remaining_seconds} seconds remaining.", className="application-status-text")
+                time_remaining_minutes = round(time_remaining_total_seconds/60, 2)
+                return html.Div(f"Status: Round {round_number} / {collection_round_count} is being run. {round_voters} people have voted so far with {time_remaining_minutes} minutes remaining.", className="application-status-text")
         else:
             if collection_status == "collecting":
                 if(collection_count is None):
@@ -364,9 +363,8 @@ def update_application_status(n_intervals, switch_time):
                 else:
                     time_remaining = collection_end_time - datetime.datetime.now(pytz.utc).replace(tzinfo=None)
                     time_remaining_total_seconds = max(0,int(round(time_remaining.total_seconds(), 0)))
-                    time_remaining_minutes = int(math.floor(time_remaining_total_seconds/60))
-                    time_remaining_seconds = time_remaining_total_seconds - time_remaining_minutes*60
-                    return html.Div(f"Status: Collecting additional comments. Current total is {collection_count}. {time_remaining_minutes} minutes {time_remaining_seconds} seconds remaining.", className="application-status-text")
+                    time_remaining_minutes = round(time_remaining_total_seconds/60, 2)
+                    return html.Div(f"Status: Collecting additional comments. Current total is {collection_count}. {time_remaining_minutes} minutes remaining.", className="application-status-text")
 
 # set the next round state (if there is a new round) and save the old votes for displaying. 
 # when a new round is available, set the timer and update 'old votes' for display.
