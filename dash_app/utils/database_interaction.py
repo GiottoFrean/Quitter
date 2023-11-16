@@ -77,3 +77,22 @@ def get_the_average_votes_for_messages_in_round(message_ids,round_id):
             avg_votes.append(0)
     session.close()
     return avg_votes
+
+def get_messages(lower=0, upper=10):
+    #fetch the last messages in order between lower and upper
+    session = SessionLocal()
+    messages = session.query(Message).order_by(Message.id.desc()).offset(lower).limit(upper-lower).all()
+    session.close()
+    content = [m.content for m in messages]
+    ids = [m.id for m in messages]
+    for i in range(len(ids)):
+        print(ids[i],content[i])
+
+def censor_message(message_id):
+    # replace the message with CENSORED. Obviously, this is a bad way to do things. 
+    session = SessionLocal()
+    message = session.query(Message).filter(Message.id == message_id).first()
+    if message:
+        message.content = "CENSORED"
+        session.commit()
+    session.close()

@@ -154,7 +154,6 @@ input_message_layout = html.Div(
                 dcc.Store(id="message-data-store"),
                 dcc.Store(id="send-message"),
                 dcc.Store(id="recaptcha-send-message"),
-                html.Div(id="send-message-output"),
                 dash_extensions.EventListener(
                     dmc.Textarea(id='message-input', placeholder='Type your message...', className='message-input', size="lg", maxRows=10, autosize=True),
                     id="message-input-listener",
@@ -175,6 +174,7 @@ input_message_layout = html.Div(
                     ),
                     className='message-send-button-container'
                 ),
+                dcc.Store(id="total-sent-messages", data={"collection_id":-1,"total":0}, storage_type="local") # record the total number of messages sent.
             ],
             className="message-input-and-button"
         )
@@ -191,7 +191,7 @@ show_more_modal = dbc.Modal(
 )
 
 refresh_component = dcc.Interval(id='home-refresh-interval', interval=5000, n_intervals=0)
-store_round_state = dcc.Store(id='store-round-state', data={"round_id":-1,"message_ids":[],"messages":[]})
+store_round_state = dcc.Store(id='store-round-state', data={"round_id":-1,"collection_id":-1,"message_ids":[],"messages":[]})
 round_state_switch_time = dcc.Store(id='round-state-switch-time', data=None)
 
 
@@ -255,9 +255,10 @@ dash.clientside_callback(
     Output('message-input', 'error'),
     Output('message-input', 'value'),
     Output('send-message', 'data'),
-    [Input('message-data-store', 'data')]
+    [Input('message-data-store', 'data')],
+    [State('total-sent-messages', 'data')]
 )
-def check_message(message_data):
+def check_message(message_data, total_sent):
     print("checking message",message_data)
     if(not message_data == None):
         message = message_data["message"]
@@ -266,7 +267,11 @@ def check_message(message_data):
             return "Error: message has too many characters. Please keep it to "+str(settings.max_characters)+" at most.", dash.no_update, dash.no_update
         else:
             if(len(message) > 0):
-                return None, "", message
+                print(total_sent)
+                if total_sent["total"] < settings.max_messages_per_collection:
+                    return None, "", message
+                else:
+                    return "Error: you have already sent "+str(settings.max_messages_per_collection)+" messages. Please wait for the next round.", dash.no_update, dash.no_update
     
     raise dash.exceptions.PreventUpdate
 
@@ -295,11 +300,14 @@ dash.clientside_callback(
 
 
 @dash.callback(
-    Output("send-message-output", "children"),
-    [Input('recaptcha-send-message', 'data')],
-    [State('send-message', 'data')]
+    Output("total-sent-messages", "data"),
+    [Input('recaptcha-send-message', 'data'), Input('store-round-state', 'data')],
+    [State('send-message', 'data'), State('total-sent-messages', 'data')]
 )
-def send_message(recaptcha_token, message):
+def send_message(recaptcha_token, round_state, message, total_sent):
+    if(round_state["collection_id"] != total_sent["collection_id"]): # new collection
+        return {"collection_id":round_state["collection_id"],"total":0}
+
     if(not message is None):
         response = requests.post(
             'https://www.google.com/recaptcha/api/siteverify',
@@ -312,8 +320,9 @@ def send_message(recaptcha_token, message):
         print("sending message",str(result))
         if((result["success"] and result["score"] > 0.5) or app_config["debug"]==True):
             database_interaction.add_comment(message)
-    
-    return dash.no_update
+            return {"collection_id":round_state["collection_id"],"total":total_sent["total"]+1}
+    raise dash.exceptions.PreventUpdate
+
 
 # update the application status (stuff at the top of the page)
 @dash.callback(
@@ -402,6 +411,7 @@ def update_round_state(n_intervals, current_state, switch_time):
             elif(action=="set new round"):
                 new_state = {}
                 new_state["round_id"] = database_state.round_id
+                new_state["collection_id"] = database_state.collection_id
                 messages = database_interaction.fetch_messages_in_round()
                 if(len(messages) == 0):
                     new_state["message_ids"] = []
