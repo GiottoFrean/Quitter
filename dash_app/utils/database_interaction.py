@@ -78,10 +78,10 @@ def get_the_average_votes_for_messages_in_round(message_ids,round_id):
     session.close()
     return avg_votes
 
-def get_messages(lower=0, upper=10):
+def get_messages(lower=0, count=10):
     #fetch the last messages in order between lower and upper
     session = SessionLocal()
-    messages = session.query(Message).order_by(Message.id.desc()).offset(lower).limit(upper-lower).all()
+    messages = session.query(Message).order_by(Message.id.desc()).offset(lower).limit(count).all()
     session.close()
     content = [m.content for m in messages]
     ids = [m.id for m in messages]
