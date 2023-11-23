@@ -130,7 +130,7 @@ def update_state(session):
         round = session.query(Round).order_by(Round.id.desc()).first()
         # Count the PEOPLE who voted. 
         # Each time somone hits "send-votes" the total views are incremented by min(round_comment_pool_size, number of messages in the round).
-        round_voters = session.query(func.count(Vote.user_id)).filter(Vote.round_id == round.id).scalar()
+        round_voters = session.query(func.count(Vote.user_id)).filter(Vote.round_id == round.id).scalar() / min(settings.round_comment_pool_size, len(round.messages))
         if round_voters is None: round_voters = 0
         if round_voters >= settings.minimum_voters_for_round_to_proceed_to_timing:
             # transition to waiting
@@ -168,7 +168,7 @@ def update_state(session):
         else:
             # stay in waiting
             round = session.query(Round).order_by(Round.id.desc()).first()
-            round_voters = session.query(func.count(Vote.user_id)).filter(Vote.round_id == round.id).scalar()
+            round_voters = session.query(func.count(Vote.user_id)).filter(Vote.round_id == round.id).scalar() / min(settings.round_comment_pool_size, len(round.messages))
             new_state.round_status = "waiting"
             new_state.round_end_time = current_state.round_end_time
             new_state.round_voters = round_voters
