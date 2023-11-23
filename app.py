@@ -110,8 +110,12 @@ dash.clientside_callback(
 )
 def login(recaptcha_token, logout_clicks, username_login, password_login):
     ctx = dash.callback_context
+
     if(ctx.triggered_id == "logout-button" and logout_clicks is not None):
         return None, "You are logged out"
+    
+    if username_login is None or password_login is None:
+        return dash.no_update, dash.no_update
 
     response = requests.post(
         'https://www.google.com/recaptcha/api/siteverify',
@@ -127,9 +131,6 @@ def login(recaptcha_token, logout_clicks, username_login, password_login):
     
     if not result["score"] > 0.5 and not app_config["debug"]:
         return dash.no_update, "Recaptcha failed"
-
-    if username_login is None or password_login is None:
-        return dash.no_update, dash.no_update
     
     user = database_interaction.get_user(username_login)
     if user is None:
@@ -168,6 +169,9 @@ dash.clientside_callback(
     [State("username-register", "value"), State("password-register", "value"), State("password-register-confirm", "value")],
 )
 def register(recaptcha_token, username_register, password_register, password_register_confirm):
+    if username_register is None or password_register is None or password_register_confirm is None:
+        return dash.no_update, dash.no_update
+
     response = requests.post(
         'https://www.google.com/recaptcha/api/siteverify',
         data = {
@@ -182,9 +186,6 @@ def register(recaptcha_token, username_register, password_register, password_reg
     
     if not result["score"] > 0.5 and not app_config["debug"]:
         return dash.no_update, "Recaptcha failed"
-
-    if username_register is None or password_register is None or password_register_confirm is None:
-        return dash.no_update, dash.no_update
     
     user = database_interaction.get_user(username_register)
     if not user is None:
