@@ -117,7 +117,6 @@ credit_and_voting_layout = html.Div(
                         html.Div(html.Div([make_credit_row(index) for index in range(settings.round_comment_pool_size)]), className="credits-container"),
                         dbc.Button("Send votes", id="send-votes-button", className="send-votes-button", n_clicks=0, color="none"),
                         dcc.Store(id="send-votes", data=None),
-                        dcc.Store(id="last-round-voted-store", data=None, storage_type="local"),
                         dcc.Store(id="recaptcha-send-votes", data=None),
                         html.Div(id="send-votes-output")
                     ],
@@ -174,7 +173,7 @@ input_message_layout = html.Div(
                     ),
                     className='message-send-button-container'
                 ),
-                dcc.Store(id="total-sent-messages", data={"collection_id":-1,"total":0}, storage_type="local") # record the total number of messages sent.
+                dcc.Store(id="total-sent-messages", data={"collection_id":-1,"total":0}) # record the total number of messages sent.
             ],
             className="message-input-and-button"
         )
@@ -250,28 +249,43 @@ dash.clientside_callback(
     State("send-clicks", "data"),
 )
 
-# process a new message, and get ready to send if it looks alright.
+@dash.callback(
+    Output("send-button", "disabled"),
+    [Input("login", "data")],
+)
+def disable_send_button(login):
+    if login is None:
+        return True
+    else:
+        return False
+
+# process a new message, and get ready to send if it looks alright and the user hasn't sent too many messages.
 @dash.callback(
     Output('message-input', 'error'),
     Output('message-input', 'value'),
-    Output('send-message', 'data'),
     [Input('message-data-store', 'data')],
-    [State('total-sent-messages', 'data')]
+    [State('login', 'data'), State('store-round-state', 'data')]
 )
-def check_message(message_data, total_sent):
-    print("checking message",message_data)
+def check_message(message_data, login, round_state):
     if(not message_data == None):
         message = message_data["message"]
         lines = message.split('\n')
         if len(message) > settings.max_characters:
-            return "Error: message has too many characters. Please keep it to "+str(settings.max_characters)+" at most.", dash.no_update, dash.no_update
+            return "Error: message has too many characters. Please keep it to "+str(settings.max_characters)+" at most.", dash.no_update
         else:
             if(len(message) > 0):
-                print(total_sent)
-                if total_sent["total"] < settings.max_messages_per_collection:
-                    return None, "", message
-                else:
-                    return "Error: you have already sent "+str(settings.max_messages_per_collection)+" messages. Please wait for the next round.", dash.no_update, dash.no_update
+                if login is None:
+                    return "Error: you are not logged in.", dash.no_update
+                
+                total_sent_so_far = database_interaction.get_total_comments_sent(login["user_id"], round_state["collection_id"])
+                if total_sent_so_far >= settings.max_messages_per_collection:
+                    return "Error: you have already sent "+str(settings.max_messages_per_collection)+" messages. Please wait for the next round.", dash.no_update
+                
+                if not database_interaction.check_user_id_exists(login["user_id"]):
+                    return "Error: you are not logged in.", dash.no_update     
+
+                database_interaction.add_comment(message, login["user_id"])
+                return "", ""
     
     raise dash.exceptions.PreventUpdate
 
@@ -297,32 +311,6 @@ dash.clientside_callback(
     Output('recaptcha-send-message', 'data'),
     Input('send-message', 'data')
 )
-
-
-@dash.callback(
-    Output("total-sent-messages", "data"),
-    [Input('recaptcha-send-message', 'data'), Input('store-round-state', 'data')],
-    [State('send-message', 'data'), State('total-sent-messages', 'data')]
-)
-def send_message(recaptcha_token, round_state, message, total_sent):
-    if(round_state["collection_id"] != total_sent["collection_id"]): # new collection
-        return {"collection_id":round_state["collection_id"],"total":0}
-
-    if(not message is None):
-        response = requests.post(
-            'https://www.google.com/recaptcha/api/siteverify',
-            data = {
-                'secret': app_config["recaptcha_secret_key"],
-                'response': recaptcha_token
-            }
-        )
-        result = response.json()
-        print("sending message",str(result))
-        if((result["success"] and result["score"] > 0.5) or app_config["debug"]==True):
-            database_interaction.add_comment(message)
-            return {"collection_id":round_state["collection_id"],"total":total_sent["total"]+1}
-    raise dash.exceptions.PreventUpdate
-
 
 # update the application status (stuff at the top of the page)
 @dash.callback(
@@ -523,73 +511,37 @@ dash.clientside_callback(
 )
 
 @dash.callback(
-    Output('send-votes', 'data'),
-    Output('last-round-voted-store', 'data'),
     Output("send-votes-button", "disabled"),
     Output({"type":"downvote-button","index":dash.ALL}, "disabled"),
     Output({"type":"upvote-button","index":dash.ALL}, "disabled"),
     [Input('send-votes-button', 'n_clicks'), Input('store-round-state', 'data')],
-    State({"type":"votes-store","index":dash.ALL}, "data"),
-    State('last-round-voted-store', 'data')
+    [State({"type":"votes-store","index":dash.ALL}, "data"), State("login", "data")]
 )
-def send_votes_and_enable_buttons(vote_send_clicks, round_data, votes, last_round_voted):
+def send_votes_and_enable_buttons(vote_send_clicks, round_data, votes, login):
+    if login is None:
+        return True, [True for i in range(settings.round_comment_pool_size)], [True for i in range(settings.round_comment_pool_size)]
+    else:
+        if not database_interaction.check_user_id_exists(login["user_id"]):
+            return True, [True for i in range(settings.round_comment_pool_size)], [True for i in range(settings.round_comment_pool_size)]
+
     ctx = dash.callback_context
     if(ctx.triggered_id == "send-votes-button"):
-        return votes, round_data["round_id"], True, [True for i in range(settings.round_comment_pool_size)], [True for i in range(settings.round_comment_pool_size)]
+        if(database_interaction.has_user_voted_in_round(round_data["round_id"], login["user_id"])):
+            return True, [True for i in range(settings.round_comment_pool_size)], [True for i in range(settings.round_comment_pool_size)]
+        else:
+            if(np.sum(np.abs(votes)) >0):
+                for i in range(len(round_data["message_ids"])):
+                    database_interaction.add_votes_to_message(round_data["round_id"], round_data["message_ids"][i], votes[i], login["user_id"])
+            return True, [True for i in range(settings.round_comment_pool_size)], [True for i in range(settings.round_comment_pool_size)]
     else: # triggered by store-round-state
-        # But you have already voted on this round, so disable the buttons
-        if(round_data["round_id"] == last_round_voted):
-            return dash.no_update, dash.no_update, True, [True for i in range(settings.round_comment_pool_size)], [True for i in range(settings.round_comment_pool_size)]
+        # check whether the user has already voted in this round.
+        if(database_interaction.has_user_voted_in_round(round_data["round_id"], login["user_id"])):
+            print("USER HAS VOTED")
+            return True, [True for i in range(settings.round_comment_pool_size)], [True for i in range(settings.round_comment_pool_size)]
         else:
             # disable the options which aren't available. 
             is_row_disabled = [False if m < len(round_data["message_ids"]) else True for m in range(settings.round_comment_pool_size)]
-            return dash.no_update, dash.no_update, False, is_row_disabled, is_row_disabled
-
-
-# update the recaptcha data store when send-votes is updated. The first time this will be empty. 
-dash.clientside_callback(
-    """
-    function(data) {
-        if (data) {
-            return new Promise(
-                function(resolve, reject) {
-                    grecaptcha.ready(function() {
-                        grecaptcha.execute('_site-key', {action: 'submit'}).then(function(token) {
-                            resolve(token);
-                        });
-                    });
-                }
-            )
-        }
-        return '';
-    }
-    """.replace("_site-key",app_config["recaptcha_site_key"]),
-    Output('recaptcha-send-votes', 'data'),
-    Input('send-votes', 'data')
-)
-
-
-@dash.callback(
-    Output("send-votes-output", "children"),
-    [Input('recaptcha-send-votes', 'data')],
-    [State('send-votes', 'data'), State('store-round-state', 'data')]
-)
-def add_votes(recaptcha_token, votes, round_data):
-    if(not votes is None):
-        response = requests.post(
-            'https://www.google.com/recaptcha/api/siteverify',
-            data = {
-                'secret': app_config["recaptcha_secret_key"],
-                'response': recaptcha_token
-            }
-        )
-        result = response.json()
-        if((result["success"] and result["score"] > 0.5) or app_config["debug"]==True):
-            if(np.sum(np.abs(votes)) >0):
-                for i in range(len(round_data["message_ids"])):
-                    database_interaction.add_votes_to_message(round_data["round_id"],round_data["message_ids"][i],votes[i])
-    return dash.no_update
-
+            return False, is_row_disabled, is_row_disabled
 
 @dash.callback(
     Output('previous-messages', 'children'),
@@ -605,11 +557,23 @@ def update_previous_messages(round_state, show_more_clicks, previous_messages):
     if ctx.triggered_id == "store-round-state" and round_state["round_id"] is None and not len(previous_messages) == 0:
         # new winner
         new_messages = database_interaction.fetch_top_messages(count=1,offset=0)
-        new_content = [html.Div(html.Div(m.content, className="message-text-previous"),className="message-container-previous") for m in new_messages if not m is None]
+        new_content = []
+        for m in new_messages:
+            if not m is None:
+                new_text = html.Div(m.content, className="message-text-previous") if not m.censored else html.Div("CENSORED", className="message-text-previous")
+                username = database_interaction.fetch_message_sender_name(m.id)
+                new_name = dcc.Link("- "+username, href="/users/"+username, className="message-username-previous")
+                new_content.append(html.Div([new_text,new_name],className="message-container-previous"))
         return new_content + previous_messages
     else:
         new_messages = database_interaction.fetch_top_messages(count=10,offset=show_more_clicks*10)
-        new_content = [html.Div(html.Div(m.content, className="message-text-previous"),className="message-container-previous") for m in new_messages if not m is None]
+        new_content = []
+        for m in new_messages:
+            if not m is None:
+                new_text = html.Div(m.content, className="message-text-previous") if not m.censored else html.Div("CENSORED", className="message-text-previous")
+                username = database_interaction.fetch_message_sender_name(m.id)
+                new_name = dcc.Link("- "+username, href="/users/"+username, className="message-username-previous")
+                new_content.append(html.Div([new_text,new_name],className="message-container-previous"))
         return previous_messages + new_content
 
 

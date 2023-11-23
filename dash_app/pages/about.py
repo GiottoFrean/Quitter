@@ -62,7 +62,41 @@ explanation1 = html.Div([
             'With quadratic voting B would win, as both the 51% and the 49% would give a significant number of votes to B.')
 ])
 
+
 explanation2 = dcc.Markdown(
+    r'''
+    
+    #### Do all users see the same posts?
+
+    Only in the final round.
+    In other rounds the posts you see are randomly selected.
+    Votes are then normalised by the number of people who saw the post.
+    
+    #### This site looks great, but is it built well under the hood?
+
+    No. 
+
+    #### Is there any protection against bots?
+
+    Actually yes, it uses the recaptcha v3 thing from google.
+
+    #### Why did you make this?
+
+    So that I, *Giotto Frean*, can say I did it first, and maybe appear in some obscure text book in the future, '*The History of Social Media (revised, 2070 edition)*'.
+
+    #### Is there some source code somewhere?
+
+    Yes, it's on github [here](https://github.com/GiottoFrean/Quitter)
+
+    #### I am Elon Musk and want to buy Quitter for $1 billion. Who do I contact?
+
+    quitterceo@gmail.com
+
+    ''',
+    mathjax=True
+)
+
+explanation3 = dcc.Markdown(
     r'''
 
     #### Why does it work? - For the mathematically inclined
@@ -101,7 +135,7 @@ explanation2 = dcc.Markdown(
 
 figure1 = html.Div(html.Img(src="/assets/fig_about.png",className="explanation-graph"),className="explanation-graph-container")
 
-explanation3 = dcc.Markdown(
+explanation4 = dcc.Markdown(
     r'''
     Rearranging the second equation:
 
@@ -178,38 +212,6 @@ explanation3 = dcc.Markdown(
     mathjax=True
 )
 
-explanation4 = dcc.Markdown(
-    r'''
-    
-    #### Do all users see the same posts?
-
-    Only in the final round.
-    In other rounds the posts you see are randomly selected.
-    Votes are then normalised by the number of people who saw the post.
-    
-    #### This site looks great, but is it built well under the hood?
-
-    No. 
-
-    #### Is there any protection against bots?
-
-    Actually yes, it uses the recaptcha v3 thing from google.
-
-    #### Why did you make this?
-
-    So that I, *Giotto Frean*, can say I did it first, and maybe appear in some obscure text book in the future, '*The History of Social Media (revised, 2070 edition)*'.
-
-    #### Is there some source code somewhere?
-
-    Yes, it's on github [here](https://github.com/GiottoFrean/Quitter)
-
-    #### I am Elon Musk and want to buy Quitter for $1 billion. Who do I contact?
-
-    quitterceo@gmail.com
-
-    ''',
-    mathjax=True
-)
 
 layout = html.Div(
     html.Div(
@@ -217,8 +219,8 @@ layout = html.Div(
             logo,
             explanation1,
             explanation2,
-            figure1,
             explanation3,
+            figure1,
             explanation4
         ],
         className = "explanation-container"

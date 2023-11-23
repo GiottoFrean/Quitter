@@ -2,10 +2,11 @@ import dash
 from dash import dcc, html, Input, Output, State
 import pandas as pd
 import sqlalchemy
-from database import Base, SessionLocal, engine
+from database.database import Base, SessionLocal, engine
 from dash_app.utils import database_interaction
 import dash_bootstrap_components as dbc
 import json
+import requests
 
 app_config = json.load(open("dash_app/app_config.json"))
 
@@ -42,7 +43,8 @@ navbar = html.Div(
         html.Div(
             children=[
                 dcc.Link('Home', href='/', className="nav-link"),
-                dcc.Link('About', href='/about', className="nav-link")
+                dcc.Link('About', href='/about', className="nav-link"),
+                dcc.Link('Login', href='/login', className="nav-link")
             ],
             className="nav-links"
         ),
@@ -64,6 +66,9 @@ app.layout = html.Div([
     html.Meta(name="twitter:description", content="Quadratic voting twitter"),
     html.Meta(name="twitter:image", content="https://quitter.app/assets/logo.svg"),
     html.Meta(name="twitter:url", content="https://quitter.app/"),
+    dcc.Store(id='login-recaptcha-send'),
+    dcc.Store(id='register-recaptcha-send'),
+    dcc.Store(id='login', storage_type='local'),
     html.Div(
         children=[
             html.Link(href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css', rel='stylesheet'),
@@ -74,6 +79,107 @@ app.layout = html.Div([
         className="overall-container"
     )
 ])
+
+dash.clientside_callback(
+    """
+    function(data) {
+        if (data) {
+            return new Promise(
+                function(resolve, reject) {
+                    grecaptcha.ready(function() {
+                        grecaptcha.execute('_site-key', {action: 'submit'}).then(function(token) {
+                            resolve(token);
+                        });
+                    });
+                }
+            )
+        }
+        return '';
+    }
+    """.replace("_site-key",app_config["recaptcha_site_key"]),
+    Output('login-recaptcha-send', 'data'),
+    Input("login-button", "n_clicks")
+)
+
+@dash.callback(
+    Output("login", "data", allow_duplicate=True),
+    Output("login-error-message", "children"),
+    [Input("login-recaptcha-send", "data")],
+    [State("username-login", "value"), State("password-login", "value")],
+    prevent_initial_call=True
+)
+def login(recaptcha_token, username_login, password_login):
+    response = requests.post(
+        'https://www.google.com/recaptcha/api/siteverify',
+        data = {
+            'secret': app_config["recaptcha_secret_key"],
+            'response': recaptcha_token
+        }
+    )
+    result = response.json()
+    if((result["success"] and result["score"] > 0.5) or app_config["debug"]==True):
+        if username_login is None or password_login is None:
+            return dash.no_update, dash.no_update
+        else:
+            user = database_interaction.get_user(username_login)
+            if user is None:
+                return dash.no_update, "User does not exist"
+            elif user.password_hash == database_interaction.hash_password(password_login):
+                return {"user_id": user.id}, "You are logged in!"
+            else:
+                return dash.no_update, "Wrong password"
+
+dash.clientside_callback(
+    """
+    function(data) {
+        if (data) {
+            return new Promise(
+                function(resolve, reject) {
+                    grecaptcha.ready(function() {
+                        grecaptcha.execute('_site-key', {action: 'submit'}).then(function(token) {
+                            resolve(token);
+                        });
+                    });
+                }
+            )
+        }
+        return '';
+    }
+    """.replace("_site-key",app_config["recaptcha_site_key"]),
+    Output('register-recaptcha-send', 'data'),
+    Input("register-button", "n_clicks")
+)
+
+@dash.callback(
+    Output("login", "data"),
+    Output("register-error-message", "children"),
+    [Input("register-recaptcha-send", "data")],
+    [State("username-register", "value"), State("password-register", "value"), State("password-register-confirm", "value")],
+)
+def register(recaptcha_token, username_register, password_register, password_register_confirm):
+    response = requests.post(
+        'https://www.google.com/recaptcha/api/siteverify',
+        data = {
+            'secret': app_config["recaptcha_secret_key"],
+            'response': recaptcha_token
+        }
+    )
+    result = response.json()
+    print(result)
+    if((result["success"] and result["score"] > 0.5) or app_config["debug"]==True):
+        if username_register is None or password_register is None or password_register_confirm is None:
+            return dash.no_update, dash.no_update
+        else:
+            user = database_interaction.get_user(username_register)
+            if user is None:
+                if password_register != password_register_confirm:
+                    return dash.no_update, "Passwords do not match"
+                database_interaction.create_user(username_register, password_register)
+                user_id = database_interaction.get_user(username_register).id
+                return {"user_id": user_id}, "You are now registered & logged in!"
+            else:
+                return dash.no_update, "User already exists"
+    
 
 if __name__ == '__main__':
     app.run(debug=app_config["debug"],port=5000,host="0.0.0.0")

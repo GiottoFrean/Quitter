@@ -4,8 +4,8 @@ import datetime
 import pytz
 from sqlalchemy.sql import text
 from sqlalchemy import update, desc, func
-from database import Base, SessionLocal, engine
-from models import Collection, Message, Round, round_message_votes_association, StateEntry
+from database.database import Base, SessionLocal, engine
+from database.models import Collection, Message, Round, round_message_association, StateEntry, Vote
 import settings
 import math
 
@@ -44,14 +44,9 @@ def next_round(session):
             # Sensible case if the round size if 5, then 7 -> 2 -> 3. And 11 -> 3 -> 4. Seems good. 
             new_round_count += 1
 
-    top_voted_messages = (
-        session.query(Message)
-        .join(round_message_votes_association)
-        .filter(round_message_votes_association.c.round_id == current_round.id)
-        .order_by(desc(round_message_votes_association.c.votes / func.greatest(round_message_votes_association.c.views,1)))
-        .limit(new_round_count)
-        .all()
-    )
+    # get top votes messages, filtering to make sure each person only voted for each message once.
+    top_voted_messages = session.query(Message).join(Vote).filter(Vote.round_id == current_round.id)\
+    .group_by(Message.id, Vote.user_id).order_by(desc(func.count(Vote.user_id))).limit(new_round_count).all()
     
     new_round = Round(collection=current_round.collection, messages=top_voted_messages)
     session.add(new_round)
@@ -135,11 +130,7 @@ def update_state(session):
         round = session.query(Round).order_by(Round.id.desc()).first()
         # Count the PEOPLE who voted. 
         # Each time somone hits "send-votes" the total views are incremented by min(round_comment_pool_size, number of messages in the round).
-        round_voters = (
-            session.query(func.sum(round_message_votes_association.c.views))
-            .filter(round_message_votes_association.c.round_id == round.id)
-            .scalar()
-        ) / min(len(round.messages), settings.round_comment_pool_size)
+        round_voters = session.query(func.count(Vote.user_id)).filter(Vote.round_id == round.id).scalar()
         if round_voters is None: round_voters = 0
         if round_voters >= settings.minimum_voters_for_round_to_proceed_to_timing:
             # transition to waiting
@@ -177,11 +168,7 @@ def update_state(session):
         else:
             # stay in waiting
             round = session.query(Round).order_by(Round.id.desc()).first()
-            round_voters = (
-                session.query(func.sum(round_message_votes_association.c.views))
-                .filter(round_message_votes_association.c.round_id == round.id)
-                .scalar()
-            ) / min(len(round.messages), settings.round_comment_pool_size)
+            round_voters = session.query(func.count(Vote.user_id)).filter(Vote.round_id == round.id).scalar()
             new_state.round_status = "waiting"
             new_state.round_end_time = current_state.round_end_time
             new_state.round_voters = round_voters
