@@ -169,24 +169,25 @@ def register(recaptcha_token, username_register, password_register, password_reg
         }
     )
     result = response.json()
-    if((result["success"] and result["score"] > 0.5) or app_config["debug"]==True):
-        if username_register is None or password_register is None or password_register_confirm is None:
-            return dash.no_update, dash.no_update
-        else:
-            user = database_interaction.get_user(username_register)
-            if user is None:
-                if password_register != password_register_confirm:
-                    return dash.no_update, "Passwords do not match"
-                if len(username_register) > 25 or " " in username_register:
-                    return dash.no_update, "username must be less and 25 characters and can't have spaces"
-                
-                database_interaction.create_user(username_register, password_register)
-                user_id = database_interaction.get_user(username_register).id
-                return {"user_id": user_id}, "You are now registered & logged in!"
-            else:
-                return dash.no_update, "User already exists"
-    else:
+    if not (result["success"] or result["score"] < 0.5) and not app_config["debug"]:
         return dash.no_update, "Recaptcha failed"
+
+    if username_register is None or password_register is None or password_register_confirm is None:
+        return dash.no_update, dash.no_update
+    
+    user = database_interaction.get_user(username_register)
+    if not user is None:
+        return dash.no_update, "User already exists"
+    
+    if password_register != password_register_confirm:
+        return dash.no_update, "Passwords do not match"
+    
+    if len(username_register) > 25 or " " in username_register:
+        return dash.no_update, "username must be less and 25 characters and can't have spaces"
+    
+    database_interaction.create_user(username_register, password_register)
+    user_id = database_interaction.get_user(username_register).id
+    return {"user_id": user_id}, "You are now registered & logged in!"        
     
 
 if __name__ == '__main__':
