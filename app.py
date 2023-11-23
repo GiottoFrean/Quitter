@@ -121,17 +121,24 @@ def login(recaptcha_token, logout_clicks, username_login, password_login):
         }
     )
     result = response.json()
-    if((result["success"] and result["score"] > 0.5) or app_config["debug"]==True):
-        if username_login is None or password_login is None:
-            return dash.no_update, dash.no_update
-        else:
-            user = database_interaction.get_user(username_login)
-            if user is None:
-                return dash.no_update, "User does not exist"
-            elif user.password_hash == database_interaction.hash_password(password_login):
-                return {"user_id": user.id}, "You are logged in!"
-            else:
-                return dash.no_update, "Wrong password"
+
+    if not result["success"] and not app_config["debug"]:
+        return dash.no_update, "Recaptcha failed"
+    
+    if not result["score"] > 0.5 and not app_config["debug"]:
+        return dash.no_update, "Recaptcha failed"
+
+    if username_login is None or password_login is None:
+        return dash.no_update, dash.no_update
+    
+    user = database_interaction.get_user(username_login)
+    if user is None:
+        return dash.no_update, "User does not exist"
+    
+    if not user.password_hash == database_interaction.hash_password(password_login):
+        return dash.no_update, "Wrong password"
+    
+    return {"user_id": user.id}, "You are logged in!"
 
 dash.clientside_callback(
     """
@@ -169,7 +176,11 @@ def register(recaptcha_token, username_register, password_register, password_reg
         }
     )
     result = response.json()
-    if not (result["success"] or result["score"] < 0.5) and not app_config["debug"]:
+
+    if not result["success"] and not app_config["debug"]:
+        return dash.no_update, "Recaptcha failed"
+    
+    if not result["score"] > 0.5 and not app_config["debug"]:
         return dash.no_update, "Recaptcha failed"
 
     if username_register is None or password_register is None or password_register_confirm is None:
