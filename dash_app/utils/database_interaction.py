@@ -169,3 +169,10 @@ def get_users(lower=0, count=10):
     ids = [u.id for u in users]
     for i in range(len(ids)):
         print(ids[i],content[i])
+
+def get_round_messages(round_id):
+    session = SessionLocal()
+    round_messages = session.query(round_message_association).filter(round_message_association.c.round_id == round_id).all()
+    session.close()
+    for round_message in round_messages:
+        print(round_message.content)

@@ -44,9 +44,8 @@ def next_round(session):
             # Sensible case if the round size if 5, then 7 -> 2 -> 3. And 11 -> 3 -> 4. Seems good. 
             new_round_count += 1
 
-    # get top votes messages, filtering to make sure each person only voted for each message once.
-    top_voted_messages = session.query(Message).join(Vote).filter(Vote.round_id == current_round.id)\
-    .group_by(Message.id, Vote.user_id).order_by(desc(func.count(Vote.user_id))).limit(new_round_count).all()
+    # get top votes messages
+    top_voted_messages = session.query(Message).join(Vote).filter(Vote.round_id == current_round.id).group_by(Message.id).order_by(desc(func.sum(Vote.count))).limit(new_round_count).all()
     
     new_round = Round(collection=current_round.collection, messages=top_voted_messages)
     session.add(new_round)
