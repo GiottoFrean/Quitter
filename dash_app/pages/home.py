@@ -535,8 +535,7 @@ def send_votes_and_enable_buttons(vote_send_clicks, round_data, votes, login):
             return True, [True for i in range(settings.round_comment_pool_size)], [True for i in range(settings.round_comment_pool_size)]
     else: # triggered by store-round-state
         # check whether the user has already voted in this round.
-        if(database_interaction.has_user_voted_in_round(round_data["round_id"], login["user_id"])):
-            print("USER HAS VOTED")
+        if(database_interaction.has_user_voted_in_round(login["user_id"], round_data["round_id"])):
             return True, [True for i in range(settings.round_comment_pool_size)], [True for i in range(settings.round_comment_pool_size)]
         else:
             # disable the options which aren't available. 
