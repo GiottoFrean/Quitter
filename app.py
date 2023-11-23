@@ -104,11 +104,15 @@ dash.clientside_callback(
 @dash.callback(
     Output("login", "data", allow_duplicate=True),
     Output("login-error-message", "children"),
-    [Input("login-recaptcha-send", "data")],
+    [Input("login-recaptcha-send", "data"), Input("logout-button", "n_clicks")],
     [State("username-login", "value"), State("password-login", "value")],
     prevent_initial_call=True
 )
-def login(recaptcha_token, username_login, password_login):
+def login(recaptcha_token, logout_clicks, username_login, password_login):
+    ctx = dash.callback_context
+    if(ctx.triggered_id == "logout-button" and logout_clicks is not None):
+        return None, "You are logged out"
+
     response = requests.post(
         'https://www.google.com/recaptcha/api/siteverify',
         data = {
@@ -165,7 +169,6 @@ def register(recaptcha_token, username_register, password_register, password_reg
         }
     )
     result = response.json()
-    print(result)
     if((result["success"] and result["score"] > 0.5) or app_config["debug"]==True):
         if username_register is None or password_register is None or password_register_confirm is None:
             return dash.no_update, dash.no_update

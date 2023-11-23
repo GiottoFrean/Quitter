@@ -658,6 +658,19 @@ ol, ul, dl {
     cursor: pointer;
 }
 
+.logout-button {
+    background-color: #497462;
+    color: white;
+    border: none;
+    margin: 5px;
+    padding: 0px;
+    margin-bottom: 7px;
+    margin-right: 7px;
+    height: 36px;
+    width: 72px;
+    cursor: pointer;
+}
+
 .login-error {
     color: red;
     margin-top: 10px;

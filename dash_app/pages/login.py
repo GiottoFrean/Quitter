@@ -45,6 +45,9 @@ layout = html.Div(
         html.Br(),
         html.Div("Not registered yet? "),
         dcc.Link("Register here", href="/register", className="nav-link-blue"),
+        html.Br(),
+        html.Div("Or"),
+        html.Button("Logout", id="logout-button", className="logout-button"),
     ],
     className="login-form",
 )
