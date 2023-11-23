@@ -179,11 +179,14 @@ def register(recaptcha_token, username_register, password_register, password_reg
                     return dash.no_update, "Passwords do not match"
                 if len(username_register) > 25 or " " in username_register:
                     return dash.no_update, "username must be less and 25 characters and can't have spaces"
+                
                 database_interaction.create_user(username_register, password_register)
                 user_id = database_interaction.get_user(username_register).id
                 return {"user_id": user_id}, "You are now registered & logged in!"
             else:
                 return dash.no_update, "User already exists"
+    else:
+        return dash.no_update, "Recaptcha failed"
     
 
 if __name__ == '__main__':

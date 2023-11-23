@@ -146,11 +146,20 @@ def get_highest_round_for_message(message):
     
 
 def get_messages(lower=0, count=10):
-    #fetch the last messages in order between lower and upper
     session = SessionLocal()
     messages = session.query(Message).order_by(Message.id.desc()).offset(lower).limit(count).all()
     session.close()
     content = [m.content for m in messages]
     ids = [m.id for m in messages]
+    for i in range(len(ids)):
+        print(ids[i],content[i])
+
+
+def get_users(lower=0, count=10):
+    session = SessionLocal()
+    users = session.query(User).order_by(User.id.desc()).offset(lower).limit(count).all()
+    session.close()
+    content = [u.username for u in users]
+    ids = [u.id for u in users]
     for i in range(len(ids)):
         print(ids[i],content[i])
