@@ -526,7 +526,7 @@ def send_votes_and_enable_buttons(vote_send_clicks, round_data, votes, login):
 
     ctx = dash.callback_context
     if(ctx.triggered_id == "send-votes-button"):
-        if(database_interaction.has_user_voted_in_round(round_data["round_id"], login["user_id"])):
+        if(database_interaction.has_user_voted_in_round(login["user_id"], round_data["round_id"])):
             return True, [True for i in range(settings.round_comment_pool_size)], [True for i in range(settings.round_comment_pool_size)]
         else:
             if(np.sum(np.abs(votes)) >0):
