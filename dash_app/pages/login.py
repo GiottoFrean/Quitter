@@ -19,6 +19,8 @@ dash.register_page(__name__,path="/login", title="login")
 
 layout = html.Div(
     [
+        html.Br(),
+        html.Div(id="currently-loggedin"),
         dcc.Input(
             id="username-login",
             className="login-input",
@@ -51,3 +53,14 @@ layout = html.Div(
     ],
     className="login-form",
 )
+
+@dash.callback(
+    Output("currently-loggedin", "children"),
+    Input("login", "data"),
+)
+def tell_who_is_logged_in(login):
+    if login is None:
+        return "You aren't logged in"
+    else:
+        login_name = database_interaction.get_username_from_id(login["user_id"])
+        return f"Logged in as {login_name}"

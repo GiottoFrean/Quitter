@@ -126,11 +126,12 @@ def login(recaptcha_token, logout_clicks, username_login, password_login):
     )
     result = response.json()
 
-    if not result["success"] and not app_config["debug"]:
-        return dash.no_update, "Recaptcha failed"
+    if not app_config["debug"]:
+        if not result["success"]:
+            return dash.no_update, "Recaptcha failed"
     
-    if not result["score"] > 0.5 and not app_config["debug"]:
-        return dash.no_update, "Recaptcha failed"
+        if not result["score"] > 0.5:
+            return dash.no_update, "Recaptcha failed"
     
     user = database_interaction.get_user(username_login)
     if user is None:

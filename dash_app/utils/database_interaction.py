@@ -86,6 +86,12 @@ def get_user(username):
     session.close()
     return user
 
+def get_username_from_id(user_id):
+    session = SessionLocal()
+    user = session.query(User).filter(User.id == user_id).first()
+    session.close()
+    return user.username
+
 def check_user_id_exists(user_id):
     session = SessionLocal()
     user = session.query(User).filter(User.id == user_id).first()
