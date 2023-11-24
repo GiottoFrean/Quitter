@@ -34,7 +34,6 @@ def layout(user_name=None):
     [State('user-page-messages', 'children'),State('user_page-user_name', 'data')]
 )
 def update_previous_messages(show_more_clicks, previous_messages, user_name):
-    # get the messages with the most votes for each collection, based on the final round votes.
     new_messages = database_interaction.get_messages_for_user(user_name,count=10,offset=len(previous_messages))
     new_content = [make_message_row_from_message(m) for m in new_messages]
     return previous_messages + new_content

@@ -66,4 +66,4 @@ def tell_who_is_logged_in(login):
         if login_name is None:
             return "You aren't logged in"
         else:
-            return f"Logged in as {login_name}"
+            return html.Div([html.Div("Logged in as: "), dcc.Link(login_name, href="/users/"+login_name, className="nav-link")])
