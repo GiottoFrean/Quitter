@@ -557,7 +557,6 @@ def update_previous_messages(round_state, show_more_clicks, previous_messages):
         # new winner
         new_messages = database_interaction.fetch_top_messages(count=1,offset=0)
         new_content = []
-        print(new_messages)
         for m in new_messages:
             if not m is None:
                 new_text = html.Div(m.content, className="message-text-previous") if not m.censored else html.Div("CENSORED", className="message-text-previous")
