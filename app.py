@@ -182,11 +182,12 @@ def register(recaptcha_token, username_register, password_register, password_reg
     )
     result = response.json()
 
-    if not result["success"] and not app_config["debug"]:
-        return dash.no_update, "Recaptcha failed"
+    if not app_config["debug"]:
+        if not result["success"]:
+            return dash.no_update, "Recaptcha failed"
     
-    if not result["score"] > 0.5 and not app_config["debug"]:
-        return dash.no_update, "Recaptcha failed"
+        if not result["score"] > 0.5:
+            return dash.no_update, "Recaptcha failed"
     
     user = database_interaction.get_user(username_register)
     if not user is None:

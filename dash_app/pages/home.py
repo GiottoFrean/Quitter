@@ -436,7 +436,7 @@ dash.clientside_callback(
     function(upvote_nclicks, downvote_nclicks, round_id, last_votes, all_votes, clicked_votes, up_clicks_old, down_clicks_old, round_id_old, old_last_votes) {
         var square_size_px = 8;
         if(round_id != round_id_old){
-            return [0, upvote_nclicks, downvote_nclicks, 0, {"width": "0px", "height": "0px"}, round_id, last_votes];
+            return [0, upvote_nclicks, downvote_nclicks, 0, {"width": "0px", "height": "0px"}, round_id, 0];
         } else if (old_last_votes != last_votes) {
             var vote_marker = {
                 "width": Math.abs(last_votes)*square_size_px+1 + "px", 
@@ -557,6 +557,7 @@ def update_previous_messages(round_state, show_more_clicks, previous_messages):
         # new winner
         new_messages = database_interaction.fetch_top_messages(count=1,offset=0)
         new_content = []
+        print(new_messages)
         for m in new_messages:
             if not m is None:
                 new_text = html.Div(m.content, className="message-text-previous") if not m.censored else html.Div("CENSORED", className="message-text-previous")
@@ -565,7 +566,7 @@ def update_previous_messages(round_state, show_more_clicks, previous_messages):
                 new_content.append(html.Div([new_text,new_name],className="message-container-previous"))
         return new_content + previous_messages
     else:
-        new_messages = database_interaction.fetch_top_messages(count=10,offset=show_more_clicks*10)
+        new_messages = database_interaction.fetch_top_messages(count=10,offset=len(previous_messages))
         new_content = []
         for m in new_messages:
             if not m is None:

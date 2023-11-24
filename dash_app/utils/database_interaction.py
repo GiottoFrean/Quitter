@@ -36,7 +36,6 @@ def fetch_messages_in_round():
 
 def add_votes_to_message(round_id,message_id,votes_to_add,user_id):
     session = SessionLocal()
-    # add a votes object
     votes = Vote(round_id=round_id,message_id=message_id,user_id=user_id, count=votes_to_add)
     session.add(votes)
     session.commit()
@@ -45,12 +44,17 @@ def fetch_top_messages(count=10,offset=0):
     session = SessionLocal()
     top_messages = []
     # go through rounds, get the message if the round has a single message. Ignore the first collection, as it is the one running now.
-    # If a collection has been won, it means a new collection has been started. So offset by 1.
-    for collection in session.query(Collection).order_by(Collection.id.desc()).offset(1+offset).limit(count).all():
+    # If a collection has been won, it means a new collection has been started. So offset by 1. Count + 1 just in case the first round is still ongoing. 
+    first_round_ongoing = False
+    for collection in session.query(Collection).order_by(Collection.id.desc()).offset(1+offset).limit(count+1).all():
         last_round = session.query(Round).filter(Round.collection_id == collection.id).order_by(Round.id.desc()).first()
         if last_round:
             if len(last_round.messages) == 1:
                 top_messages.append(last_round.messages[0])
+            else:
+                first_round_ongoing = True
+    if not first_round_ongoing:
+        top_messages = top_messages[:-1]
     session.close()
     return top_messages
 
@@ -77,6 +81,7 @@ def get_total_comments_sent(user_id,collection_id):
 def has_user_voted_in_round(user_id,round_id):
     session = SessionLocal()
     has_voted = session.query(Vote).filter(Vote.user_id == user_id, Vote.round_id == round_id).first()
+    print("has_voted",has_voted)
     session.close()
     return has_voted is not None
 
@@ -90,6 +95,8 @@ def get_username_from_id(user_id):
     session = SessionLocal()
     user = session.query(User).filter(User.id == user_id).first()
     session.close()
+    if user is None:
+        return None
     return user.username
 
 def check_user_id_exists(user_id):
