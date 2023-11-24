@@ -62,7 +62,10 @@ def get_the_average_votes_for_messages_in_round(message_ids,round_id):
     session = SessionLocal()
     avg_votes = []
     for message_id in message_ids:
-        avg_votes.append(session.query(func.avg(Vote.count)).filter(Vote.message_id == message_id, Vote.round_id == round_id).scalar())
+        v = session.query(func.avg(Vote.count)).filter(Vote.message_id == message_id, Vote.round_id == round_id).scalar()
+        if v is None:
+            v = 0
+        avg_votes.append(v)
     session.close()
     return avg_votes
 
