@@ -164,9 +164,9 @@ def get_messages(lower=0, count=10):
     session.close()
     content = [m.content for m in messages]
     ids = [m.id for m in messages]
+    users = [m.user_id for m in messages]
     for i in range(len(ids)):
-        print(ids[i],content[i])
-
+        print("user:",users[i],"id:",ids[i],"content",content[i])
 
 def get_users(lower=0, count=10):
     session = SessionLocal()
@@ -183,3 +183,4 @@ def get_round_messages(round_id):
     session.close()
     for round_message in round_messages:
         print(round_message.content)
+
