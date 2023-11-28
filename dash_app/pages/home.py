@@ -329,13 +329,13 @@ def disable_send_button(login):
     [State('login', 'data'), State('store-round-state', 'data'), State('image-select-store', 'data')]
 )
 def send_message(message_data, login, round_state, image):
-    if(not message_data == None):
+    if(not (message_data is None and image is None)):
         message = message_data["message"]
         lines = message.split('\n')
         if len(message) > settings.max_characters:
             return "Error: message has too many characters. Please keep it to "+str(settings.max_characters)+" at most.", dash.no_update
         else:
-            if(len(message) > 0):
+            if(len(message) > 0 or not image is None):
                 if login is None:
                     return "Error: you are not logged in.", dash.no_update
                 
