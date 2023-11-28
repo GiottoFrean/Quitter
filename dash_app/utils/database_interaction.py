@@ -168,7 +168,7 @@ def get_messages(lower=0, count=10):
     ids = [m.id for m in messages]
     users = [m.user_id for m in messages]
     for i in range(len(ids)):
-        print("user:",users[i],"id:",ids[i],"content",content[i])
+        print(f"user: {users[i]}, id: {ids[i]}, content: {content[i]}, image: {messages[i].image}")
 
 def get_users(lower=0, count=10):
     session = SessionLocal()

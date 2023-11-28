@@ -199,9 +199,10 @@ def register(recaptcha_token, username_register, password_register, password_reg
     if len(username_register) > 25:
         return dash.no_update, "username can be at most 25 characters"
     
-    #check username is just letters and numbers
-    if not username_register.isalnum():
-        return dash.no_update, "username can only contain letters and numbers"
+    #check username is just letters, numbers or underscores
+    username_no_underscores = username_register.replace("_","")
+    if not username_no_underscores.isalnum():
+        return dash.no_update, "username can only contain letters, numbers, underscores"
 
     database_interaction.create_user(username_register, password_register)
     user_id = database_interaction.get_user(username_register).id
