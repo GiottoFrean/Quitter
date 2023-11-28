@@ -545,6 +545,7 @@ body {
     padding: 5px;
     display: flex;
     flex-flow: column nowrap;
+    overflow: hidden;
 }
 
 .image {
