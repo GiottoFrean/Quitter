@@ -293,6 +293,7 @@ body {
     display: flex;
     flex-flow: column nowrap;
     align-items: flex-start;
+    justify-content: flex-start;
     min-height: 120px;
     border: none;
     border-radius: 5px;
@@ -304,13 +305,14 @@ body {
 }
 
 .message-text {
+    flex: 1 1 0;
+    display: flex;
+    flex-flow: row wrap;
+    align-items: center;
     white-space: pre-wrap;
     overflow-wrap: break-word;
-    text-align: left;
+    text-align: justify;
     text-overflow: ellipsis;
-    display: -webkit-box;
-    -webkit-line-clamp: 10;
-    -webkit-box-orient: vertical;
 }
 
 .message-image-container {
@@ -523,6 +525,11 @@ body {
     white-space: pre-wrap;
     overflow-wrap: break-word;
     text-align: left;
+}
+
+.message-text-and-image-previous {
+    flex: 1 1 0;
+    max-width: 100%;
 }
 
 .message-username-previous {
