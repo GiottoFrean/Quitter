@@ -23,6 +23,7 @@ class Message(Base):
     user_id = Column(Integer, ForeignKey('Users.id'), index=True)
     posted_time = Column(DateTime)
     censored = Column(Boolean, default=False)
+    image = Column(String, default=None)
 
 # Association table to represent the many-to-many relationship between Round and Message
 round_message_association = Table(

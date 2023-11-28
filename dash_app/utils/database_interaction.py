@@ -11,11 +11,11 @@ import hashlib
 import datetime
 import pytz
 
-def add_comment(message_content, user_id):
+def add_comment(message_content, user_id, image=None):
     session = SessionLocal()
     latest_collection = session.query(Collection).order_by(Collection.id.desc()).first()
     if latest_collection:
-        session.add(Message(content=message_content,collection=latest_collection, user_id=user_id, posted_time=datetime.datetime.now(pytz.utc).replace(tzinfo=None)))
+        session.add(Message(content=message_content,collection=latest_collection, user_id=user_id, image=image, posted_time=datetime.datetime.now(pytz.utc).replace(tzinfo=None)))
         session.commit()
     session.close()
 
@@ -46,6 +46,8 @@ def fetch_top_messages(count=10,offset=0):
     # go through rounds, get the message if the round has a single message. Ignore the first collection, as it is the one running now.
     # If a collection has been won, it means a new collection has been started. So offset by 1. Count + 1 just in case the first round is still ongoing. 
     last_collection_with_rounds = session.query(Collection).order_by(Collection.id.desc()).offset(1).first()
+    if last_collection_with_rounds is None:
+        return []
     last_round_in_last_collection = session.query(Round).filter(Round.collection_id == last_collection_with_rounds.id).order_by(Round.id.desc()).first()
     last_round_ongoing = True if len(last_round_in_last_collection.messages) > 1 else False
     start_point = 2+offset if last_round_ongoing else 1+offset

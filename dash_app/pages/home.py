@@ -12,6 +12,7 @@ import dash_extensions
 import json
 import requests
 import math
+import os
 
 app_config = json.load(open("dash_app/app_config.json"))
 
@@ -20,8 +21,11 @@ dash.register_page(__name__,path="/", title="Quitter")
 # voting row is a row with a message, a voting square, and up/down vote buttons
 def make_voting_row(index):
     message_container = dbc.Button(
-        html.Div(id={"type":"message-text","index":index}, className="message-text"),
-        id={"type":"voting-message-container","index":index}, 
+        [
+            html.Div(id={"type":"message-text","index":index}, className="message-text"),
+            html.Div(id={"type":"message-image","index":index}, className="message-image-container")
+        ],
+        id={"type":"voting-message-container","index":index},
         className="voting-message-container", 
         n_clicks=0, 
         color="none")
@@ -151,8 +155,6 @@ input_message_layout = html.Div(
         html.Div(
             children=[
                 dcc.Store(id="message-data-store"),
-                dcc.Store(id="send-message"),
-                dcc.Store(id="recaptcha-send-message"),
                 dash_extensions.EventListener(
                     dmc.Textarea(id='message-input', placeholder='Type your message...', className='message-input', size="lg", maxRows=10, autosize=True),
                     id="message-input-listener",
@@ -173,6 +175,19 @@ input_message_layout = html.Div(
                     ),
                     className='message-send-button-container'
                 ),
+                dcc.Store(id="image-select-store", data=None),
+                html.Div(
+                    dbc.Button(
+                        children=[
+                            html.I(className="fas fa-paperclip", id="image-button-logo")
+                        ],
+                        id='image-button', 
+                        className='image-open-button',
+                        n_clicks=0,
+                        color="none",
+                    ),
+                    className='image-open-button-container'
+                ),
                 dcc.Store(id="total-sent-messages", data={"collection_id":-1,"total":0}) # record the total number of messages sent.
             ],
             className="message-input-and-button"
@@ -189,14 +204,34 @@ show_more_modal = dbc.Modal(
     is_open=False
 )
 
+def make_image_button_and_container(image_path, index):
+    return dbc.Button(
+        children=html.Img(src=image_path, className="image-select-modal-image"),
+        id={"type":"image-select-modal-image","index":index},
+        className="image-select-modal-image-button",
+        n_clicks=0,
+        color="none"
+    )
+
+image_files = ["/assets/images/"+file for file in os.listdir("dash_app/static/images") if file.endswith(".jpg") or file.endswith(".png")]
+image_select_modal = dbc.Modal(
+    [
+        dbc.ModalHeader("Select an image"),
+        dbc.ModalBody([make_image_button_and_container(image_path, index) for index, image_path in enumerate(image_files)]),
+    ],
+    id="image-select-modal",
+    is_open=False
+)
+
 refresh_component = dcc.Interval(id='home-refresh-interval', interval=5000, n_intervals=0)
-store_round_state = dcc.Store(id='store-round-state', data={"round_id":-1,"collection_id":-1,"message_ids":[],"messages":[]})
+store_round_state = dcc.Store(id='store-round-state', data={"round_id":-1,"collection_id":-1,"message_ids":[],"messages":[], "images":[]})
 round_state_switch_time = dcc.Store(id='round-state-switch-time', data=None)
 
 
 layout = html.Div(
     [
         application_status_layout,
+        image_select_modal,
         credit_and_voting_layout,
         previous_messages_layout,
         input_message_layout,
@@ -206,6 +241,33 @@ layout = html.Div(
         round_state_switch_time
     ]
 )
+
+#show the images when the paperclip is clicked, and hide them when an image is slected.
+@dash.callback(
+    Output("image-select-store", "data"),
+    Output("image-select-modal", "is_open"),
+    Output("image-button-logo", "className"),
+    [Input("image-button", "n_clicks"), Input({"type":"image-select-modal-image","index":dash.ALL}, "n_clicks"), Input("image-select-store", "data"), Input("message-data-store", "data")],
+    [State("image-select-modal", "is_open"), State({"type":"image-select-modal-image","index":dash.ALL}, "n_clicks")]
+)
+def select_image(image_button_clicks, image_clicks, current_image, message_data, is_open, image_clicks_old):
+    ctx = dash.callback_context
+    if ctx.triggered_id == "image-button":
+        if not current_image is None:
+            # cancel the image selection, don't open the modal.
+            return None, False, "fas fa-paperclip"
+        else:
+            return None, True, "fas fa-paperclip"
+    else:
+        if ctx.triggered_id is None:
+            raise dash.exceptions.PreventUpdate
+        if ctx.triggered_id == "message-data-store":
+            return None, False, "fas fa-paperclip"
+
+        index = ctx.triggered_id["index"]
+        filename = image_files[index]
+        return filename, False, "fas fa-times"
+
 
 # prevent the enter key from adding a new line, unless pressed with shift. 
 dash.clientside_callback(
@@ -264,9 +326,9 @@ def disable_send_button(login):
     Output('message-input', 'error'),
     Output('message-input', 'value'),
     [Input('message-data-store', 'data')],
-    [State('login', 'data'), State('store-round-state', 'data')]
+    [State('login', 'data'), State('store-round-state', 'data'), State('image-select-store', 'data')]
 )
-def check_message(message_data, login, round_state):
+def send_message(message_data, login, round_state, image):
     if(not message_data == None):
         message = message_data["message"]
         lines = message.split('\n')
@@ -282,35 +344,12 @@ def check_message(message_data, login, round_state):
                     return "Error: you have already sent "+str(settings.max_messages_per_collection)+" messages. Please wait for the next round.", dash.no_update
                 
                 if not database_interaction.check_user_id_exists(login["user_id"]):
-                    return "Error: you are not logged in.", dash.no_update     
+                    return "Error: you are not logged in.", dash.no_update
 
-                database_interaction.add_comment(message, login["user_id"])
+                database_interaction.add_comment(message, login["user_id"], image)
                 return "", ""
     
     raise dash.exceptions.PreventUpdate
-
-
-# update the recaptcha data store when message-send is updated. The first time this will be empty. 
-dash.clientside_callback(
-    """
-    function(data) {
-        if (data) {
-            return new Promise(
-                function(resolve, reject) {
-                    grecaptcha.ready(function() {
-                        grecaptcha.execute('_site-key', {action: 'submit'}).then(function(token) {
-                            resolve(token);
-                        });
-                    });
-                }
-            )
-        }
-        return '';
-    }
-    """.replace("_site-key",app_config["recaptcha_site_key"]),
-    Output('recaptcha-send-message', 'data'),
-    Input('send-message', 'data')
-)
 
 # update the application status (stuff at the top of the page)
 @dash.callback(
@@ -404,15 +443,18 @@ def update_round_state(n_intervals, current_state, switch_time):
                 if(len(messages) == 0):
                     new_state["message_ids"] = []
                     new_state["messages"] = []
+                    new_state["images"] = []
                 else:   
                     new_state["message_ids"] = [m.id for m in messages]
                     new_state["messages"] = [m.content for m in messages]
+                    new_state["images"] = [m.image for m in messages]
                 return new_state, [database_state.round_id for i in range(settings.round_comment_pool_size)], [dash.no_update for i in range(settings.round_comment_pool_size)], None
     raise dash.exceptions.PreventUpdate
 
 # sets the display of the voting messages (whether to show them, etc)
 @dash.callback(
     Output({"type":"message-text","index":dash.ALL}, "children"),
+    Output({"type":"message-image","index":dash.ALL}, "children"),
     Output({"type":"voting-row","index":dash.ALL}, "className"),
     Output("credits-and-vote-show-hide-wrapper", "className"),
     [Input("store-round-state", "data")],
@@ -422,13 +464,15 @@ def update_voting_stuff(state):
     if(len(messages) <= 1):
         # round is done, only 1 message left. 
         content = ["" for m in range(settings.round_comment_pool_size)]
+        images = [None for m in range(settings.round_comment_pool_size)]
         rows_classnames = ["voting-row hide" for m in range(settings.round_comment_pool_size)]
         credit_and_voting_classname = "credits-and-vote-show-hide-wrapper hide"
     else:
         content = [messages[m] if m < len(messages) else "" for m in range(settings.round_comment_pool_size)]
+        images = [html.Img(src=state["images"][m], className="message-image") if m < len(messages) and not state["images"][m] is None else None for m in range(settings.round_comment_pool_size)]
         rows_classnames = ["voting-row show" if m<len(messages) else "voting-row hide" for m in range(settings.round_comment_pool_size)]
         credit_and_voting_classname = "credits-and-vote-show-hide-wrapper show"
-    return content, rows_classnames, credit_and_voting_classname
+    return content, images, rows_classnames, credit_and_voting_classname
 
 
 dash.clientside_callback(
@@ -560,9 +604,11 @@ def update_previous_messages(round_state, show_more_clicks, previous_messages):
         for m in new_messages:
             if not m is None:
                 new_text = html.Div(m.content, className="message-text-previous") if not m.censored else html.Div("CENSORED", className="message-text-previous")
+                new_image = html.Img(src=m.image, className="message-image-previous") if not m.image is None else None
+                text_and_image = html.Div([new_text,new_image],className="message-text-and-image-previous")
                 username = database_interaction.fetch_message_sender_name(m.id)
                 new_name = dcc.Link("- "+username, href="/users/"+username, className="message-username-previous")
-                new_content.append(html.Div([new_text,new_name],className="message-container-previous"))
+                new_content.append(html.Div([text_and_image,new_name],className="message-container-previous"))
         return new_content + previous_messages
     else:
         new_messages = database_interaction.fetch_top_messages(count=10,offset=len(previous_messages))
@@ -570,9 +616,11 @@ def update_previous_messages(round_state, show_more_clicks, previous_messages):
         for m in new_messages:
             if not m is None:
                 new_text = html.Div(m.content, className="message-text-previous") if not m.censored else html.Div("CENSORED", className="message-text-previous")
+                new_image = html.Img(src=m.image, className="message-image-previous") if not m.image is None else None
+                text_and_image = html.Div([new_text,new_image],className="message-text-and-image-previous")
                 username = database_interaction.fetch_message_sender_name(m.id)
                 new_name = dcc.Link("- "+username, href="/users/"+username, className="message-username-previous")
-                new_content.append(html.Div([new_text,new_name],className="message-container-previous"))
+                new_content.append(html.Div([text_and_image,new_name],className="message-container-previous"))
         return previous_messages + new_content
 
 
@@ -580,10 +628,16 @@ def update_previous_messages(round_state, show_more_clicks, previous_messages):
     Output('show-more-modal', 'is_open'),
     Output('show-more-modal-body', 'children'),
     [Input({"type":"voting-message-container","index":dash.ALL}, "n_clicks")],
-    [State({"type":"message-text","index":dash.ALL}, "children")],
+    [State("store-round-state", "data")],
     prevent_initial_call=True
 )
-def show_more_message(clicks_show, messages):
+def show_more_message(clicks_show, store_round_state):
     ctx = dash.callback_context
     index = ctx.triggered_id['index']
-    return True, messages[int(index)]
+    message = store_round_state["messages"][index]
+    image = store_round_state["images"][index]
+    if image is None:
+        image = ""
+    else:
+        image = html.Img(src=image)
+    return True, html.Div([html.Div(message), image])

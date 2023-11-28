@@ -187,11 +187,11 @@ body {
 }
 
 .mantine-1f3akmo {
-    padding-right: 45px;
+    padding-right: 90px;
 }
 
 .mantine-Textarea-error {
-    padding-right: 45px;
+    padding-right: 90px;
 }
 
 /* Styles for send button */
@@ -208,6 +208,28 @@ body {
 .message-send-button {
     background-color: #4e5471;
     color: white;
+    border: none;
+    margin: 5px;
+    padding: 0px;
+    margin-bottom: 7px;
+    margin-right: 7px;
+    height: 36px;
+    width: 36px;
+    cursor: pointer;
+}
+
+.image-open-button-container {
+    position: absolute;
+    right: 45px;
+    bottom: 0px;
+    flex: 0 0 auto;
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: flex-end;
+}
+
+.image-open-button {
+    color: #4e5471;
     border: none;
     margin: 5px;
     padding: 0px;
@@ -249,7 +271,7 @@ body {
     width: 100%;
     display: flex;
     flex-flow: row nowrap;
-    align-items: center;
+    align-items: stretch;
     overflow: hidden;
     border-bottom: 1px solid #CCC;
     margin-bottom: -1px;
@@ -268,6 +290,9 @@ body {
 
 .voting-message-container {
     flex: 1 1 0;
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: flex-start;
     min-height: 120px;
     border: none;
     border-radius: 5px;
@@ -283,10 +308,14 @@ body {
     overflow-wrap: break-word;
     text-align: left;
     text-overflow: ellipsis;
-    overflow: hidden;
     display: -webkit-box;
     -webkit-line-clamp: 10;
     -webkit-box-orient: vertical;
+}
+
+.message-image-container {
+    padding-left: 10px;
+
 }
 
 .show-more-modal-body {
