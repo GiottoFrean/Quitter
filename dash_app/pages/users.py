@@ -41,7 +41,7 @@ def update_previous_messages(show_more_clicks, previous_messages, user_name):
     for m in new_messages:
         if not m is None:
             new_text = html.Div(m.content, className="message-text-previous") if not m.censored else html.Div("CENSORED", className="message-text-previous")
-            new_image = html.Img(src=m.image, className="message-image-previous") if not (m.image is None or m.censored) else None
+            new_image = html.Div(html.Img(src=m.image, className="image"), className="image-container") if not (m.image is None or m.censored) else None
             text_and_image = html.Div([new_text,new_image],className="message-text-and-image-previous")
             higest_round, total_rounds = database_interaction.get_highest_round_for_message(m)
             new_ratio = html.Div("("+str(higest_round)+"/"+str(total_rounds)+")", className="message-ratio-previous")

@@ -315,9 +315,16 @@ body {
     text-overflow: ellipsis;
 }
 
-.message-image-container {
-    padding-left: 10px;
 
+.image-select-modal-pagination {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: center;
+    align-items: center;
+    margin-left: 10px;
+    margin-right: 10px;
+    margin-bottom: 0px;
+    margin-top: 10px;
 }
 
 .show-more-modal-body {
@@ -530,6 +537,20 @@ body {
 .message-text-and-image-previous {
     flex: 1 1 0;
     max-width: 100%;
+}
+
+.image-container {
+    max-height: 300px;
+    max-width: 300px;
+    padding: 5px;
+    display: flex;
+    flex-flow: column nowrap;
+}
+
+.image {
+    max-width: 100%;
+    height: 100%;
+    object-fit: contain;
 }
 
 .message-username-previous {

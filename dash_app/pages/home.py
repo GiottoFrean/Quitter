@@ -23,7 +23,7 @@ def make_voting_row(index):
     message_container = dbc.Button(
         [
             html.Div(id={"type":"message-text","index":index}, className="message-text"),
-            html.Div(id={"type":"message-image","index":index}, className="message-image-container")
+            html.Div(id={"type":"message-image","index":index})
         ],
         id={"type":"voting-message-container","index":index},
         className="voting-message-container", 
@@ -204,9 +204,8 @@ show_more_modal = dbc.Modal(
     is_open=False
 )
 
-def make_image_button_and_container(image_path, index):
+def make_image_button_and_container(index):
     return dbc.Button(
-        children=html.Img(src=image_path, className="image-select-modal-image"),
         id={"type":"image-select-modal-image","index":index},
         className="image-select-modal-image-button",
         n_clicks=0,
@@ -214,10 +213,13 @@ def make_image_button_and_container(image_path, index):
     )
 
 image_files = ["/assets/images/"+file for file in os.listdir("dash_app/static/images") if file.endswith(".jpg") or file.endswith(".png")]
+image_page_size = 5
+number_of_pages = math.ceil(len(image_files)/image_page_size)
 image_select_modal = dbc.Modal(
     [
         dbc.ModalHeader("Select an image"),
-        dbc.ModalBody([make_image_button_and_container(image_path, index) for index, image_path in enumerate(image_files)]),
+        dbc.Pagination(max_value=number_of_pages, fully_expanded=False, id="image-select-modal-pagination", className="image-select-modal-pagination"),
+        dbc.ModalBody([make_image_button_and_container(index) for index in range(image_page_size)]),
     ],
     id="image-select-modal",
     is_open=False
@@ -242,15 +244,28 @@ layout = html.Div(
     ]
 )
 
+@dash.callback(
+    Output({"type":"image-select-modal-image","index":dash.ALL}, "children"),
+    [Input("image-select-modal-pagination", "active_page")]
+)
+def update_image_select_modal_images(page):
+    if page is None:
+        page = 0
+    else:
+        page = page - 1
+    relevant_files = image_files[page*image_page_size:(page+1)*image_page_size]
+    return [html.Div(html.Img(src=f, className="image"), className="image-container") for f in relevant_files]+[None for i in range(image_page_size-len(relevant_files))]
+
+
 #show the images when the paperclip is clicked, and hide them when an image is slected.
 @dash.callback(
     Output("image-select-store", "data"),
     Output("image-select-modal", "is_open"),
     Output("image-button-logo", "className"),
     [Input("image-button", "n_clicks"), Input({"type":"image-select-modal-image","index":dash.ALL}, "n_clicks"), Input("image-select-store", "data"), Input("message-data-store", "data")],
-    [State("image-select-modal", "is_open"), State({"type":"image-select-modal-image","index":dash.ALL}, "n_clicks")]
+    [State("image-select-modal", "is_open"), State({"type":"image-select-modal-image","index":dash.ALL}, "n_clicks"), State("image-select-modal-pagination", "active_page")],
 )
-def select_image(image_button_clicks, image_clicks, current_image, message_data, is_open, image_clicks_old):
+def select_image(image_button_clicks, image_clicks, current_image, message_data, is_open, image_clicks_old, page):
     ctx = dash.callback_context
     if ctx.triggered_id == "image-button":
         if not current_image is None:
@@ -265,7 +280,11 @@ def select_image(image_button_clicks, image_clicks, current_image, message_data,
             return None, False, "fas fa-paperclip"
 
         index = ctx.triggered_id["index"]
-        filename = image_files[index]
+        if page is None:
+            page = 0
+        else:
+            page = page - 1
+        filename = image_files[page*image_page_size+index]
         return filename, False, "fas fa-times"
 
 
@@ -469,7 +488,7 @@ def update_voting_stuff(state):
         credit_and_voting_classname = "credits-and-vote-show-hide-wrapper hide"
     else:
         content = [messages[m] if m < len(messages) else "" for m in range(settings.round_comment_pool_size)]
-        images = [html.Img(src=state["images"][m], className="message-image") if m < len(messages) and not state["images"][m] is None else None for m in range(settings.round_comment_pool_size)]
+        images = [html.Div(html.Img(src=state["images"][m], className="image"), className="image-container") if m < len(messages) and not state["images"][m] is None else None for m in range(settings.round_comment_pool_size)]
         rows_classnames = ["voting-row show" if m<len(messages) else "voting-row hide" for m in range(settings.round_comment_pool_size)]
         credit_and_voting_classname = "credits-and-vote-show-hide-wrapper show"
     return content, images, rows_classnames, credit_and_voting_classname
@@ -604,7 +623,7 @@ def update_previous_messages(round_state, show_more_clicks, previous_messages):
         for m in new_messages:
             if not m is None:
                 new_text = html.Div(m.content, className="message-text-previous") if not m.censored else html.Div("CENSORED", className="message-text-previous")
-                new_image = html.Img(src=m.image, className="message-image-previous") if not (m.image is None or m.censored) else None
+                new_image = html.Div(html.Img(src=m.image, className="image"), className="image-container") if not (m.image is None or m.censored) else None
                 text_and_image = html.Div([new_text,new_image],className="message-text-and-image-previous")
                 username = database_interaction.fetch_message_sender_name(m.id)
                 new_name = dcc.Link("- "+username, href="/users/"+username, className="message-username-previous")
@@ -616,7 +635,7 @@ def update_previous_messages(round_state, show_more_clicks, previous_messages):
         for m in new_messages:
             if not m is None:
                 new_text = html.Div(m.content, className="message-text-previous") if not m.censored else html.Div("CENSORED", className="message-text-previous")
-                new_image = html.Img(src=m.image, className="message-image-previous") if not (m.image is None or m.censored) else None
+                new_image = html.Div(html.Img(src=m.image, className="image"), className="image-container") if not (m.image is None or m.censored) else None
                 text_and_image = html.Div([new_text,new_image],className="message-text-and-image-previous")
                 username = database_interaction.fetch_message_sender_name(m.id)
                 new_name = dcc.Link("- "+username, href="/users/"+username, className="message-username-previous")
@@ -639,5 +658,5 @@ def show_more_message(clicks_show, store_round_state):
     if image is None:
         image = ""
     else:
-        image = html.Img(src=image)
+        image = html.Img(src=image, className="image")
     return True, html.Div([html.Div(message), image])
