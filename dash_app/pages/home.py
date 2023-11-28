@@ -446,8 +446,8 @@ def update_round_state(n_intervals, current_state, switch_time):
                     new_state["images"] = []
                 else:   
                     new_state["message_ids"] = [m.id for m in messages]
-                    new_state["messages"] = [m.content for m in messages]
-                    new_state["images"] = [m.image for m in messages]
+                    new_state["messages"] = [m.content if not m.censored else "CENSORED" for m in messages]
+                    new_state["images"] = [m.image if not m.censored else None for m in messages]
                 return new_state, [database_state.round_id for i in range(settings.round_comment_pool_size)], [dash.no_update for i in range(settings.round_comment_pool_size)], None
     raise dash.exceptions.PreventUpdate
 
@@ -604,7 +604,7 @@ def update_previous_messages(round_state, show_more_clicks, previous_messages):
         for m in new_messages:
             if not m is None:
                 new_text = html.Div(m.content, className="message-text-previous") if not m.censored else html.Div("CENSORED", className="message-text-previous")
-                new_image = html.Img(src=m.image, className="message-image-previous") if not m.image is None else None
+                new_image = html.Img(src=m.image, className="message-image-previous") if not (m.image is None or m.censored) else None
                 text_and_image = html.Div([new_text,new_image],className="message-text-and-image-previous")
                 username = database_interaction.fetch_message_sender_name(m.id)
                 new_name = dcc.Link("- "+username, href="/users/"+username, className="message-username-previous")
@@ -616,7 +616,7 @@ def update_previous_messages(round_state, show_more_clicks, previous_messages):
         for m in new_messages:
             if not m is None:
                 new_text = html.Div(m.content, className="message-text-previous") if not m.censored else html.Div("CENSORED", className="message-text-previous")
-                new_image = html.Img(src=m.image, className="message-image-previous") if not m.image is None else None
+                new_image = html.Img(src=m.image, className="message-image-previous") if not (m.image is None or m.censored) else None
                 text_and_image = html.Div([new_text,new_image],className="message-text-and-image-previous")
                 username = database_interaction.fetch_message_sender_name(m.id)
                 new_name = dcc.Link("- "+username, href="/users/"+username, className="message-username-previous")

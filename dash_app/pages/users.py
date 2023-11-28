@@ -37,5 +37,13 @@ def layout(user_name=None):
 )
 def update_previous_messages(show_more_clicks, previous_messages, user_name):
     new_messages = database_interaction.get_messages_for_user(user_name,count=10,offset=len(previous_messages))
-    new_content = [make_message_row_from_message(m) for m in new_messages]
+    new_content = []
+    for m in new_messages:
+        if not m is None:
+            new_text = html.Div(m.content, className="message-text-previous") if not m.censored else html.Div("CENSORED", className="message-text-previous")
+            new_image = html.Img(src=m.image, className="message-image-previous") if not (m.image is None or m.censored) else None
+            text_and_image = html.Div([new_text,new_image],className="message-text-and-image-previous")
+            username = database_interaction.fetch_message_sender_name(m.id)
+            new_name = dcc.Link("- "+username, href="/users/"+username, className="message-username-previous")
+            new_content.append(html.Div([text_and_image,new_name],className="message-container-previous"))
     return previous_messages + new_content
