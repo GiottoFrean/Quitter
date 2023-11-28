@@ -23,7 +23,7 @@ def make_voting_row(index):
     message_container = dbc.Button(
         [
             html.Div(id={"type":"message-text","index":index}, className="message-text"),
-            html.Div(id={"type":"message-image","index":index})
+            html.Div(id={"type":"message-image","index":index}, className="voting-image-container")
         ],
         id={"type":"voting-message-container","index":index},
         className="voting-message-container", 

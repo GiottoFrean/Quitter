@@ -539,9 +539,15 @@ body {
     max-width: 100%;
 }
 
+.voting-image-container {
+    margin-bottom: 5px;
+    margin-top: 5px;
+    overflow: hidden;
+}
+
 .image-container {
-    max-height: 300px;
-    max-width: 300px;
+    max-height: 150px;
+    max-width: 150px;
     padding: 5px;
     display: flex;
     flex-flow: column nowrap;
