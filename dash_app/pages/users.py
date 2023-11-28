@@ -13,6 +13,8 @@ def make_message_row_from_message(m):
     return html.Div([new_text,new_ratio],className="user-message-container")
 
 def layout(user_name=None):
+    if user_name == "AreCatsEdible":
+        user_name = "AreCatsEdible?"
     return html.Div(
         id="user-page-messages-container",
         className="user-messages-container",
