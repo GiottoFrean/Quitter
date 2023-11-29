@@ -186,3 +186,12 @@ def get_round_messages(round_id):
     for round_message in round_messages:
         print(round_message.content)
 
+def get_votes():
+    # print the user id and votes for the latest round
+    session = SessionLocal()
+    latest_round = session.query(Round).order_by(Round.id.desc()).first()
+    votes = session.query(Vote).filter(Vote.round_id == latest_round.id).all()
+    session.close()
+    for vote in votes:
+        print(vote.user_id,vote.count)
+        
