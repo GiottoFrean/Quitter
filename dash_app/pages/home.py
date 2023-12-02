@@ -205,11 +205,17 @@ show_more_modal = dbc.Modal(
 )
 
 def make_image_button_and_container(index):
-    return dbc.Button(
-        id={"type":"image-select-modal-image","index":index},
-        className="image-select-modal-image-button",
-        n_clicks=0,
-        color="none"
+    return dcc.Loading(
+        dbc.Button(
+            id={"type":"image-select-modal-image","index":index},
+            className="image-select-modal-image-button",
+            n_clicks=0,
+            color="none"
+        ),
+        type="circle",
+        color="red",
+        fullscreen=False,
+        style={"width": "50px", "height": "50px"}
     )
 
 image_files = ["/assets/images/"+file for file in os.listdir("dash_app/static/images") if file.endswith(".jpg") or file.endswith(".png")]
