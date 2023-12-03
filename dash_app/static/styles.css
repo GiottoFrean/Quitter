@@ -858,3 +858,13 @@ ol, ul, dl {
     overflow-wrap: break-word;
     text-align: left;
 }
+
+.image-select-modal-body {
+    display: flex;
+    flex-flow: row wrap;
+    align-items: center;    
+}
+
+.image-select-modal-image-button {
+    flex: 0 0 auto;
+}

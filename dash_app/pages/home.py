@@ -219,13 +219,13 @@ def make_image_button_and_container(index):
     )
 
 image_files = ["/assets/images/"+file for file in os.listdir("dash_app/static/images") if file.endswith(".jpg") or file.endswith(".png")]
-image_page_size = 5
+image_page_size = 10
 number_of_pages = math.ceil(len(image_files)/image_page_size)
 image_select_modal = dbc.Modal(
     [
         dbc.ModalHeader("Select an image"),
         dbc.Pagination(max_value=number_of_pages, fully_expanded=False, id="image-select-modal-pagination", className="image-select-modal-pagination"),
-        dbc.ModalBody([make_image_button_and_container(index) for index in range(image_page_size)]),
+        dbc.ModalBody([make_image_button_and_container(index) for index in range(image_page_size)], className="image-select-modal-body"),
     ],
     id="image-select-modal",
     is_open=False
@@ -260,7 +260,9 @@ def update_image_select_modal_images(page):
     else:
         page = page - 1
     relevant_files = image_files[page*image_page_size:(page+1)*image_page_size]
-    return [html.Div(html.Img(src=f, className="image"), className="image-container") for f in relevant_files]+[None for i in range(image_page_size-len(relevant_files))]
+    filenames_small = [f.replace("/assets/images/","/assets/images_small/") for f in relevant_files]
+    filenames_final = [filenames_small[i] if os.path.exists(filenames_small[i]) else relevant_files[i] for i in range(len(relevant_files))]
+    return [html.Div(html.Img(src=f, className="image"), className="image-container") for f in filenames_final]+[None for i in range(image_page_size-len(relevant_files))]
 
 
 #show the images when the paperclip is clicked, and hide them when an image is slected.
