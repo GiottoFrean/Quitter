@@ -37,7 +37,7 @@ navbar = html.Div(
     children=[
         html.Div(
             [
-                dcc.Link([html.Img(src="/assets/logo.svg",className="logo-header"),html.Div('Quitter')], href='/', className="nav-quitter"), 
+                dcc.Link([html.Img(src="/assets/logo.svg",className="logo-header"),html.Div('Quitter.app')], href='/', className="nav-quitter"), 
             ],
             className="nav-quitter-container"),
         html.Div(
@@ -55,7 +55,7 @@ server = app.server
 
 app.layout = html.Div([
     html.Meta(name='description', content='Quadratic voting twitter'),
-    html.Title('Quitter.app'),
+    html.Title('Quitter'),
     html.Meta(name="og:title", content="Quitter"),
     html.Meta(name="og:description", content="Quadratic voting twitter"),
     html.Meta(name="og:image", content="https://quitter.app/assets/logo.svg"),
