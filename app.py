@@ -55,7 +55,7 @@ server = app.server
 
 app.layout = html.Div([
     html.Meta(name='description', content='Quadratic voting twitter'),
-    html.Title('Quitter'),
+    html.Title('Quitter.app'),
     html.Meta(name="og:title", content="Quitter"),
     html.Meta(name="og:description", content="Quadratic voting twitter"),
     html.Meta(name="og:image", content="https://quitter.app/assets/logo.svg"),
