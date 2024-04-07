@@ -631,11 +631,13 @@ body {
 .image {
     max-height: 150px;
     width: auto;
+    max-width: 150px;
     object-fit: scale-down;
 }
 
 .image-small {
     max-height: 100px;
+    max-width: 100px;
     width: auto;
     object-fit: scale-down;
 }
