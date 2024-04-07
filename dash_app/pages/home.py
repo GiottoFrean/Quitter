@@ -244,7 +244,7 @@ input_message_layout = html.Div(
 
 show_more_modal = dbc.Modal(
     [
-        dbc.ModalHeader([dbc.Button("Load older", id="show-more-modal-load-older", className="show-more-button-on-modal", n_clicks=0, color="none")]),
+        dbc.ModalHeader([dbc.Button("Load chain", id="show-more-modal-load-older", className="show-more-button-on-modal", n_clicks=0, color="none")]),
         dcc.Store(id="show-more-current-oldest-message-index"),
         dbc.ModalBody([], id="show-more-modal-body", className="show-more-modal-body"),
     ],
@@ -717,7 +717,7 @@ def update_previous_messages(round_state, show_more_clicks, previous_messages,pr
                     break
     else: # loading button clicked
         new_messages = []
-        while (len(new_messages) < 10):
+        while (len(new_messages) < 5):
             next_message = database_interaction.fetch_top_messages(count=1,offset=len(all_loaded_previous_message_ids))
             if next_message is None or len(next_message) == 0:
                 break
@@ -795,7 +795,10 @@ def show_more_message(vote_clicks_open, previous_message_clicks_open, clicks_sho
         m = database_interaction.get_message_by_id(earlier_message_id)
         new_text = html.Div(m.content, className="message-text") if not m.censored else html.Div("CENSORED", className="message-text-previous")
         new_image = html.Div(html.Img(src=m.image, className="image"), className="image-container") if not (m.image is None or m.censored) else None
-        text_and_image = html.Div([new_image,new_text],className="message-text-and-image")
+        if (j!=0):
+            text_and_image = html.Div([new_image,new_text],className="message-text-and-image-with-bottom-border")
+        else:
+            text_and_image = html.Div([new_image,new_text],className="message-text-and-image")
         new_content.append(html.Div(text_and_image,className="previous-message-container-messages"))
         if not m.previous_message_id is None:
             earlier_message_id = m.previous_message_id

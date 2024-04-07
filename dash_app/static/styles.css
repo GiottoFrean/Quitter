@@ -614,6 +614,14 @@ body {
     flex-flow: column nowrap;
 }
 
+.message-text-and-image-with-bottom-border {
+    flex: 1 1 0;
+    max-width: 100%;
+    display: flex;
+    flex-flow: column nowrap;
+    border-bottom: 1px solid #CCC;
+}
+
 .voting-image-container {
     overflow: hidden;
     max-width: 100%;
