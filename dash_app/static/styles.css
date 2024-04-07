@@ -152,11 +152,53 @@ body {
     color: #777;
 }
 
-/* Styles for chat display, including a shadow */
-.message-input-and-button {
+.message-input-and-previous-message {
+    display: flex;
+    flex-flow: column nowrap;
     position: relative;
     max-width: 700px;
     flex: 1 1 auto;
+}
+
+.input-in-reply-message-container {
+    background-color: white;
+    margin: 5px;
+    border: 1px solid #CCC;
+    display: flex;
+    flex-flow: row nowrap;
+    border-radius: 5px;
+    justify-content: flex-end;
+}
+
+.input-in-reply-message {
+    flex: 1 1 0;
+    display: flex;
+    flex-flow: row nowrap;
+}
+
+.cancel-reply-button-container {
+    flex: 0 0 auto;
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: flex-end;
+    margin-right: 5px;
+}
+
+.cancel-reply-button {
+    background-color: none;
+    color: red;
+    border: none;
+    margin: 5px;
+    padding: 0px;
+    margin-bottom: 7px;
+    margin-right: 7px;
+    height: 36px;
+    width: 36px;
+    cursor: pointer;
+}
+
+/* Styles for chat display, including a shadow */
+.message-input-and-button {
     border: 1px solid #CCC;
     background-color: white;
     border-radius: 5px;
@@ -166,13 +208,13 @@ body {
 }
 
 @media (max-width: 1000px) {
-    .message-input-and-button {
+    .message-input-and-previous-message {
         max-width: 600px;
     }
 }
 
 @media (max-width: 800px) {
-    .message-input-and-button {
+    .message-input-and-previous-message {
         max-width: 500px;
     }
 }
@@ -284,7 +326,7 @@ body {
 }
 
 .voting-row.show {
-    max-height: 266px;
+    max-height: 350px;
     transition: max-height 1s linear;
 }
 
@@ -292,8 +334,8 @@ body {
     flex: 1 1 0;
     display: flex;
     flex-flow: column nowrap;
-    align-items: flex-start;
-    justify-content: flex-start;
+    justify-content: center;
+    gap: 5px;
     min-height: 120px;
     border: none;
     border-radius: 5px;
@@ -302,6 +344,20 @@ body {
     cursor: pointer;
     position: relative;
     overflow: hidden;
+}
+
+.voting-row-old-message-container {
+    flex: 0 1 auto;
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+}
+
+.voting-row-current-message-container {
+    flex: 0 0 auto;
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
 }
 
 .message-text {
@@ -313,6 +369,19 @@ body {
     overflow-wrap: break-word;
     text-align: left;
     text-overflow: ellipsis;
+}
+
+.message-text-old {
+    flex: 1 1 0;
+    display: flex;
+    flex-flow: row wrap;
+    align-items: center;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+    text-align: left;
+    text-overflow: ellipsis;
+    font-style: italic;
+    font-size: small;
 }
 
 
@@ -511,43 +580,48 @@ body {
 .previous-messages-title {
     font-size: 18px;
     font-weight: bold;
-    margin: 0 0 10px 0;
+    margin: 0px;
     color: #666;
 }
 
-.message-container-previous {
+.previous-message-container {
     width: 100%;
+    padding-left: 10px;
+    padding-right: 10px;
+    border-bottom: 1px solid #CCC;
     display: flex;
     flex-flow: row wrap;
     align-items: stretch;
     justify-content: flex-end;
-    padding-left: 10px;
-    padding-right: 10px;
-    border-bottom: 1px solid #CCC;
 }
 
-.message-text-previous {
+.previous-message-container-messages {
     flex: 1 1 0;
-    max-width: 100%;
-    white-space: pre-wrap;
-    overflow-wrap: break-word;
-    text-align: left;
+    border: none;
+    border-radius: 5px;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: center;
 }
 
-.message-text-and-image-previous {
+.message-text-and-image {
     flex: 1 1 0;
     max-width: 100%;
+    display: flex;
+    flex-flow: row wrap;
+    align-items: center;
 }
 
 .voting-image-container {
-    margin-bottom: 5px;
-    margin-top: 5px;
     overflow: hidden;
+    max-width: 100%;
+    display: flex;
+    flex-flow: row wrap;
 }
 
 .image-container {
-    max-height: 150px;
-    max-width: 150px;
     padding: 5px;
     display: flex;
     flex-flow: column nowrap;
@@ -555,23 +629,55 @@ body {
 }
 
 .image {
-    max-width: 100%;
-    height: 100%;
-    object-fit: contain;
+    max-height: 150px;
+    width: auto;
+    object-fit: scale-down;
+}
+
+.image-small {
+    max-height: 100px;
+    width: auto;
+    object-fit: scale-down;
+}
+
+.message-previous-username-reply-and-show-more {
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-right: 5px;
+    align-self: flex-end;
 }
 
 .message-username-previous {
     font-size: small;
     font-weight: bold;
-    margin-right: 5px;
     text-align: right;
     color: #666;
-    align-self: flex-end;
     text-decoration: none;
 }
 
-.show-more-button {
+.reply-button {
+    font-size: small;
+    font-weight: bold;
+    color: #497462;
     border: none;
+    padding: 0px;
+    cursor: pointer;
+}
+
+.show-more-button {
+    padding: 0px;
+    margin-bottom: 5px;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.show-more-button-on-modal {
+    padding: 0px;
+    border:none;
     border-radius: 5px;
     font-size: 16px;
     cursor: pointer;
@@ -867,4 +973,9 @@ ol, ul, dl {
 
 .image-select-modal-image-button {
     flex: 1 1 auto;
+}
+
+.modal-header {
+    align-items: center;
+    justify-content: center;
 }

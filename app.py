@@ -206,8 +206,7 @@ def register(recaptcha_token, username_register, password_register, password_reg
 
     database_interaction.create_user(username_register, password_register)
     user_id = database_interaction.get_user(username_register).id
-    return {"user_id": user_id}, "You are now registered & logged in!"        
-    
+    return {"user_id": user_id}, "You are now registered & logged in!"
 
 if __name__ == '__main__':
     app.run(debug=app_config["debug"],port=5000,host="0.0.0.0")

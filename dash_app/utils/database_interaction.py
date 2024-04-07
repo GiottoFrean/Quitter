@@ -11,11 +11,11 @@ import hashlib
 import datetime
 import pytz
 
-def add_comment(message_content, user_id, image=None):
+def add_comment(message_content, user_id, image=None, reply_id=None):
     session = SessionLocal()
     latest_collection = session.query(Collection).order_by(Collection.id.desc()).first()
     if latest_collection:
-        session.add(Message(content=message_content,collection=latest_collection, user_id=user_id, image=image, posted_time=datetime.datetime.now(pytz.utc).replace(tzinfo=None)))
+        session.add(Message(content=message_content,collection=latest_collection, user_id=user_id, previous_message_id=reply_id, image=image, posted_time=datetime.datetime.now(pytz.utc).replace(tzinfo=None)))
         session.commit()
     session.close()
 
@@ -56,6 +56,12 @@ def fetch_top_messages(count=10,offset=0):
         top_messages.append(last_round.messages[0])
     session.close()
     return top_messages
+
+def get_message_by_id(message_id):
+    session = SessionLocal()
+    message = session.query(Message).filter(Message.id == message_id).first()
+    session.close()
+    return message
 
 def get_the_average_votes_for_messages_in_round(message_ids,round_id):
     session = SessionLocal()

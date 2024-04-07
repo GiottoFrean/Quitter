@@ -21,6 +21,7 @@ class Message(Base):
     content = Column(String)
     collection_id = Column(Integer, ForeignKey('Collections.id'), index=True)
     user_id = Column(Integer, ForeignKey('Users.id'), index=True)
+    previous_message_id = Column(Integer, ForeignKey('Messages.id'), index=True)
     posted_time = Column(DateTime)
     censored = Column(Boolean, default=False)
     image = Column(String, default=None)

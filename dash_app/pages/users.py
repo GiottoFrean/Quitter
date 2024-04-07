@@ -20,13 +20,13 @@ def layout(user_name=None):
         className="user-messages-container",
         children=[
             html.Div(user_name, className="user-page-title"),
+            html.Div([dbc.Button("Show more", id="user-page-show-more-button", className="show-more-button", n_clicks=0, color="none")],className="show-more-button-container"),
             dcc.Store(id='user_page-user_name', data=user_name),
             html.Div(
                 id="user-page-messages",
                 children = [],
                 className="user-messages"
-            ),
-            html.Div([dbc.Button("Show more", id="user-page-show-more-button", className="show-more-button", n_clicks=0, color="none")],className="show-more-button-container")
+            )
         ]
     )
 
@@ -40,10 +40,19 @@ def update_previous_messages(show_more_clicks, previous_messages, user_name):
     new_content = []
     for m in new_messages:
         if not m is None:
-            new_text = html.Div(m.content, className="message-text-previous") if not m.censored else html.Div("CENSORED", className="message-text-previous")
+            new_text = html.Div(m.content, className="message-text") if not m.censored else html.Div("CENSORED", className="message-text-previous")
             new_image = html.Div(html.Img(src=m.image, className="image"), className="image-container") if not (m.image is None or m.censored) else None
-            text_and_image = html.Div([new_text,new_image],className="message-text-and-image-previous")
+            text_and_image = html.Div([new_image,new_text],className="message-text-and-image")
             higest_round, total_rounds = database_interaction.get_highest_round_for_message(m)
             new_ratio = html.Div("("+str(higest_round)+"/"+str(total_rounds)+")", className="message-ratio-previous")
-            new_content.append(html.Div([text_and_image,new_ratio],className="message-container-previous"))
-    return previous_messages + new_content
+            if(m.previous_message_id is None):
+                content = text_and_image
+            else:
+                previous_message = database_interaction.get_message_by_id(m.previous_message_id)
+                previous_text = html.Div(previous_message.content, className="message-text-old") if not previous_message.censored else html.Div("CENSORED", className="message-text")
+                previous_image = html.Div(html.Img(src=previous_message.image, className="image-small"), className="image-container") if not (previous_message.image is None or previous_message.censored) else None
+                previous_text_and_image = html.Div([previous_image,previous_text],className="message-text-and-image")
+                content = [previous_text_and_image,text_and_image]
+            new_content.append(html.Div([html.Div(content,className="previous-message-container-messages"),new_ratio], className="previous-message-container"))
+    new_content = new_content[::-1]
+    return new_content + previous_messages
