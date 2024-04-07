@@ -501,6 +501,8 @@ body {
 .vote-square-marker {
     background-color: #497462;
     position: absolute;
+    margin-left: -1px;
+    margin-top: -1px;
 }
 
 .credits-container {

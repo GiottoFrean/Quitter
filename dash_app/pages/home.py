@@ -13,6 +13,7 @@ import json
 import requests
 import math
 import os
+import time
 
 app_config = json.load(open("dash_app/app_config.json"))
 
@@ -773,6 +774,7 @@ def update_previous_messages(round_state, show_more_clicks, previous_messages,pr
     prevent_initial_call=True
 )
 def show_more_message(vote_clicks_open, previous_message_clicks_open, clicks_show_more, store_round_state, oldest_message_id, current_messages, current_previous_message_clicks):
+    stime = time.time()
     ctx = dash.callback_context
     print(ctx.triggered_id)
     if ctx.triggered_id == "show-more-modal-load-older":
@@ -807,23 +809,34 @@ def show_more_message(vote_clicks_open, previous_message_clicks_open, clicks_sho
             break
     
     combined_content = new_content[::-1] + current_messages
-    print(previous_message_clicks_open)
+    print("Time taken: ", time.time()-stime)
     return True, combined_content, earlier_message_id, previous_message_clicks_open
 
 dash.clientside_callback(
     """
-    function() {
-        messageInput = document.querySelector('#message-input');
-        if (messageInput) {
-            messageInput.focus();
-        } else {
-            console.log("message-input not found");
+    function(n_clicks, n_clicks_all) {
+        all_equal = true;
+        for (var i = 0; i < n_clicks.length; i++) {
+            if (n_clicks[i] != n_clicks_all[i]) {
+                all_equal = false;
+            }
         }
-        return;
+        if (all_equal) {
+            return window.dash_clientside.no_update;
+        } else {
+            messageInput = document.querySelector('#message-input');
+            if (messageInput) {
+                messageInput.focus();
+            } else {
+                console.log("message-input not found");
+            }
+            return;
+        }
     }
     """,
     Output("hidden-div-reply-focus", "children"),
     Input({"type":"reply-button","index":dash.ALL}, "n_clicks"),
+    State({"type":"reply-button-nclick-store","index":dash.ALL}, "data"),
     prevent_initial_call=True
 )
 
