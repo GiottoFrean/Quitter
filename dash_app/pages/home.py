@@ -572,7 +572,7 @@ def update_voting_stuff(state):
 dash.clientside_callback(
     """
     function(upvote_nclicks, downvote_nclicks, round_id, last_votes, all_votes, clicked_votes, up_clicks_old, down_clicks_old, round_id_old, old_last_votes) {
-        var square_size_px = 8;
+        var square_size_px = 5;
         if(round_id != round_id_old){
             return [0, upvote_nclicks, downvote_nclicks, 0, {"width": "0px", "height": "0px"}, round_id, 0];
         } else if (old_last_votes != last_votes) {
@@ -737,7 +737,7 @@ def update_previous_messages(round_state, show_more_clicks, previous_messages,pr
             new_name = dcc.Link("- "+username, href="/users/"+username, className="message-username-previous")
             reply_button = dbc.Button("Reply", id={"type":"reply-button","index":m.id}, className="reply-button", n_clicks=0, color="none")
             reply_button_click_store = dcc.Store(id={"type":"reply-button-nclick-store","index":m.id}, data=0)
-            username_reply_and_show_more = html.Div([new_name,reply_button,reply_button_click_store],className="message-previous-username-reply-and-show-more")
+            username_reply_and_show_more = html.Div([reply_button,new_name,reply_button_click_store],className="message-previous-username-reply-and-show-more")
             if(m.previous_message_id is None):
                 content = text_and_image
             else:

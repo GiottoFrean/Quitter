@@ -4,6 +4,9 @@ let headerPos = 0;
 window.addEventListener('scroll', () => {
   const currentScrollPos = window.pageYOffset;
   const headerBar = document.getElementById("fixed-header-bar");
+  if (!headerBar) {
+    return;
+  }
   const headerHeight = headerBar.offsetHeight;
 
   if (currentScrollPos > prevScrollPos && currentScrollPos - headerPos > headerHeight) {

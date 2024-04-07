@@ -419,15 +419,18 @@ body {
 
 .vote-button-up {
     background-color: #497462;
-    height: 36px;
-    width: 36px;
+    height: 30px;
+    width: 30px;
+    padding: 0px;
+    cursor: pointer;
 }
 
 .vote-button-down {
     background-color: #ff3917;
-    height: 36px;
-    width: 36px;
+    height: 30px;
+    width: 30px;
     cursor: pointer;
+    padding: 0px;
 }
 
 .vote-square-container{
@@ -440,31 +443,31 @@ body {
 .vote-square {
     rotate: -45deg;
     position: relative;
-    min-height: 80px;
-    min-width: 80px;
-    width: 80px;
-    height: 80px;
-    margin: 20px;
+    min-height: 50px;
+    min-width: 50px;
+    width: 50px;
+    height: 50px;
+    margin: 13px;
 }
 
 .vote-square-grid-container {
-    height: 80px;
-    width: 80px;
+    height: 50px;
+    width: 50px;
     position: absolute;
 }
 
 .vote-square-number-holder {
     position: absolute;
     rotate: 45deg;
-    width: 80px;
-    height: 80px;
+    width: 50px;
+    height: 50px;
     display: flex;
     flex-flow: row nowrap;
     justify-content: center;
 }
 
 .vote-square-number {
-    font-size: 48px;
+    font-size: 30px;
     font-weight: bold;
     color: black;
 }
@@ -490,8 +493,8 @@ body {
 }
 
 .grid-table-cell {
-    height: 9px;
-    width: 9px;
+    height: 6px;
+    width: 6px;
     border: 1px solid #444444;
     margin-left: -1px;
     margin-top: -1px;
@@ -590,7 +593,7 @@ body {
     padding-right: 10px;
     border-bottom: 1px solid #CCC;
     display: flex;
-    flex-flow: row wrap;
+    flex-flow: column nowrap;
     align-items: stretch;
     justify-content: flex-end;
 }
@@ -610,8 +613,7 @@ body {
     flex: 1 1 0;
     max-width: 100%;
     display: flex;
-    flex-flow: row wrap;
-    align-items: center;
+    flex-flow: column nowrap;
 }
 
 .voting-image-container {
@@ -644,11 +646,10 @@ body {
 
 .message-previous-username-reply-and-show-more {
     display: flex;
-    flex-flow: column nowrap;
+    flex-flow: row nowrap;
     align-items: flex-end;
     justify-content: space-between;
     margin-right: 5px;
-    align-self: flex-end;
 }
 
 .message-username-previous {
