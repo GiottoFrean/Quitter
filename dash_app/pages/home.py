@@ -636,7 +636,7 @@ dash.clientside_callback(
 dash.clientside_callback(
     """
     function(votes) {
-        const square_size_px = 8;
+        const square_size_px = 5;
         let credit = 100 - votes.reduce((a, b) => a + b*b, 0);
         let credit_width = Math.floor(credit / 5);
         let number_of_row_with_extra_credit = credit % 5;
