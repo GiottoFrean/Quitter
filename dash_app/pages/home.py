@@ -157,15 +157,17 @@ previous_messages_layout = html.Div(
     children=[
         html.Div("Previous messages", className="previous-messages-title"),
         html.Div(id="hidden-div-reply-focus", style={"display":"none"}),
-        html.Div([dbc.Button("Show older", id="show-more-button", className="show-more-button", n_clicks=0, color="none")],className="show-more-button-container"),
+        html.Div([dbc.Button("Show older", id="show-older-button", className="show-more-button", n_clicks=0, color="none")],className="show-more-button-container"),
         html.Div(
             id="previous-messages",
-            children = [],
+            children = [html.Div(id={"type":"previous-message","index":index}, className="previous-message") for index in range(settings.max_previous_messages)],
             className="previous-messages"
         ),
-        dcc.Store(id="previous-messages-ids", data=[]),
-        dcc.Store(id="all-loaded-previous-message-ids", data=[]),
-        dcc.Store(id="previous-message-ids-ruled-out", data=[])
+        dcc.Store(id="previous-message-all-sindex", data=0),
+        dcc.Store(id="previous-message-valid-sindex", data=0),
+        dcc.Store(id="previous-message-valid-ids", data=[]),
+        dcc.Store(id="previous-message-invalid-ids", data=[]),
+        html.Div([dbc.Button("Show newer", id="show-newer-button", className="show-more-button", n_clicks=0, color="none")],className="show-more-button-container")
     ]
 )
 
@@ -682,53 +684,65 @@ def send_votes_and_enable_buttons(vote_send_clicks, round_data, votes, login):
             return False, is_row_disabled, is_row_disabled
 
 @dash.callback(
-    Output('previous-messages', 'children'),
-    Output('previous-messages-ids', 'data'),
-    Output('all-loaded-previous-message-ids', 'data'),
-    Output('previous-message-ids-ruled-out', 'data'),
-    [Input("store-round-state", "data"), Input('show-more-button', 'n_clicks')],
-    State('previous-messages', 'children'),
-    State('previous-messages-ids', 'data'),
-    State('all-loaded-previous-message-ids', 'data'),
-    State('previous-message-ids-ruled-out', 'data'),
+    Output({"type":"previous-message","index":dash.ALL}, "children"),
+    Output('previous-message-all-sindex', 'data'),
+    Output('previous-message-valid-sindex', 'data'),
+    Output('previous-message-valid-ids', 'data'),
+    Output('previous-message-invalid-ids', 'data'),
+    Input("store-round-state", "data"),
+    Input('show-older-button', 'n_clicks'),
+    Input('show-newer-button', 'n_clicks'),
+    State('previous-message-all-sindex', 'data'),
+    State('previous-message-valid-sindex', 'data'),
+    State('previous-message-valid-ids', 'data'),
+    State('previous-message-invalid-ids', 'data'),
 )
-def update_previous_messages(round_state, show_more_clicks, previous_messages,previous_message_ids,all_loaded_previous_message_ids,ids_ruled_out):
-    # get the messages with the most votes for each collection, based on the final round votes.
+def update_previous_messages(round_state, show_old_clicks, show_new_clicks, s_index_all_added, s_index_valid, valid_ids, invalid_ids):
     ctx = dash.callback_context
-    if previous_messages is None:
-        previous_messages = []
-
-    # don't update if the round state has updated, but there isn't a round going on and there are previous messages.
-    if(ctx.triggered_id == "store-round-state" and not round_state["round_id"] is None and not len(previous_messages) == 0):
-        raise dash.exceptions.PreventUpdate
     
-    new_winner = ctx.triggered_id == "store-round-state" and round_state["round_id"] is None and not len(previous_messages) == 0
+    if(len(valid_ids) == 0 or ctx.triggered_id == "store-round-state"):
+        s_index_all_added = 0
+        s_index_valid = 0
+        invalid_ids = []
+        valid_ids = []
+    
+    if(ctx.triggered_id == "show-older-button"):
+        s_index_valid += settings.max_previous_messages
+    
+    if ctx.triggered_id == "show-newer-button":
+        s_index_valid -= settings.max_previous_messages
+        if s_index_valid < 0:
+            s_index_valid = 0
 
-    if new_winner:
-        print(previous_message_ids)
-        new_messages = database_interaction.fetch_top_messages(count=1,offset=0)
-        all_loaded_previous_message_ids.append(new_messages[0].id)
-        if(not new_messages[0].previous_message_id is None):
-            id_to_remove = new_messages[0].previous_message_id
-            ids_ruled_out.append(id_to_remove)
-            for i in range(len(previous_message_ids)):
-                if previous_message_ids[i] == id_to_remove:
-                    previous_message_ids.pop(i)
-                    previous_messages.pop(i)
-                    break
-    else: # loading button clicked
-        new_messages = []
-        while (len(new_messages) < 5):
-            next_message = database_interaction.fetch_top_messages(count=1,offset=len(all_loaded_previous_message_ids))
-            if next_message is None or len(next_message) == 0:
+    if(len(valid_ids) == 0 or ctx.triggered_id == "show-older-button"):
+        added = 0
+        while(added < settings.max_previous_messages):
+            try:
+                m = database_interaction.fetch_top_messages(1, s_index_all_added)
+            except:
                 break
-            next_message = next_message[0]
-            all_loaded_previous_message_ids.append(next_message.id)
-            if(not next_message.id in ids_ruled_out):
-                new_messages.append(next_message)
-            if(not next_message.previous_message_id is None):
-                ids_ruled_out.append(next_message.previous_message_id)
+            if m is None or len(m) == 0:
+                break
+            m = m[0]
+            s_index_all_added += 1
+            if(not m.previous_message_id is None):
+                invalid_ids.append(m.previous_message_id)
+            if(not m.id in invalid_ids):
+                valid_ids.append(m.id)
+                added += 1
+
+    s_index_valid = min(s_index_valid, len(valid_ids)-settings.max_previous_messages)
+    s_index_valid = max(s_index_valid, 0)
+    selected_ids = valid_ids[s_index_valid:(s_index_valid+settings.max_previous_messages)]
+    new_messages = []
+    for i in range(5):
+        if i < len(selected_ids):
+            new_messages.append(database_interaction.get_message_by_id(selected_ids[i]))
+        else:
+            new_messages.append(None)
+
     new_content = []
+    new_ids = []
     for m in new_messages:
         if not m is None:
             new_text = html.Div(m.content, className="message-text") if not m.censored else html.Div("CENSORED", className="message-text-previous")
@@ -750,12 +764,11 @@ def update_previous_messages(round_state, show_more_clicks, previous_messages,pr
             button = dbc.Button(content,className="previous-message-container-messages", id={"type":"previous-message-show-button","index":m.id}, n_clicks=0, color="none")
             button_clicks = dcc.Store(id={"type":"previous-message-show-button-n-clicks","index":m.id}, data=0)
             new_content.append(html.Div([button,button_clicks,username_reply_and_show_more], className="previous-message-container"))
-    new_content = new_content[::-1]
-    new_ids = [m.id for m in new_messages][::-1]
-    if new_winner:
-        return previous_messages + new_content, previous_message_ids + new_ids, all_loaded_previous_message_ids, ids_ruled_out
-    else:
-        return new_content + previous_messages, new_ids + previous_message_ids, all_loaded_previous_message_ids, ids_ruled_out
+            new_ids.append(m.id)
+        else:
+            new_content.append(None)
+            new_ids.append(None)
+    return new_content[::-1], s_index_all_added, s_index_valid, valid_ids, invalid_ids
     
 
 
