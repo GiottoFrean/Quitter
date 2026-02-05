@@ -31,9 +31,12 @@ pip install -r requirements.txt
 # Configure database settings in database/local.py
 # Configure reCAPTCHA keys in dash_app/recaptcha_config.json and dash_app/app_config.json
 
-# Initialize database
-python migration.py
+# Initialize database (first time only)
+python central_script.py reset
 
-# Run the app
+# Run the central script (manages voting rounds)
+python central_script.py &
+
+# Run the web app (in a separate process)
 python app.py
 ```
