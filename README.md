@@ -24,19 +24,68 @@ All posts are anonymous, so content is judged on merit alone. Posts advance thro
 
 ## Installation
 
+### 1. Install PostgreSQL
+
 ```bash
-# Install dependencies
+sudo apt update
+sudo apt install postgresql postgresql-contrib
+```
+
+### 2. Create Database and Set Password
+
+Start the PostgreSQL prompt:
+```bash
+sudo -u postgres psql
+```
+
+Create the database and set a password:
+```sql
+CREATE DATABASE quitter_db;
+ALTER USER postgres WITH PASSWORD 'your_password';
+GRANT ALL PRIVILEGES ON DATABASE quitter_db TO postgres;
+\q
+```
+
+### 3. Configure Database Connection
+
+Edit `database/local.py` and update the credentials:
+```python
+db_params = {
+    'host': 'localhost',
+    'dbname': 'quitter_db',
+    'user': 'postgres',
+    'password': 'your_password',  # Use the password you set above
+}
+```
+
+### 4. Install Python Dependencies
+
+```bash
 pip install -r requirements.txt
+```
 
-# Configure database settings in database/local.py
-# Configure reCAPTCHA keys in dash_app/recaptcha_config.json and dash_app/app_config.json
+### 5. Initialize Database
 
-# Initialize database (first time only)
+```bash
 python central_script.py reset
+```
 
-# Run the central script (manages voting rounds)
+### 6. Run the Application
+
+You need two terminal windows:
+
+**Terminal 1** - Central script (manages voting rounds):
+```bash
 python central_script.py
+```
 
-# Run the web app (in a separate process)
+**Terminal 2** - Web application:
+```bash
 python app.py
 ```
+
+The app will be available at `http://localhost:8050`
+
+### Optional: Enable reCAPTCHA
+
+Get reCAPTCHA keys from [Google reCAPTCHA](https://www.google.com/recaptcha) and update `dash_app/app_config.json` with your site and secret keys.

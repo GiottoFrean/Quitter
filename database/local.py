@@ -1,8 +1,8 @@
 db_params = {
     'host': 'localhost',
-    'dbname': 'database_name_goes_here',
+    'dbname': 'quitter_db',
     'user': 'postgres',
-    'password': 'password_goes_here',
+    'password': 'your_password',
 }
 
 db_params_sa = db_params.copy()
