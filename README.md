@@ -35,7 +35,7 @@ pip install -r requirements.txt
 python central_script.py reset
 
 # Run the central script (manages voting rounds)
-python central_script.py &
+python central_script.py
 
 # Run the web app (in a separate process)
 python app.py
