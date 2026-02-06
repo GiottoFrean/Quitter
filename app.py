@@ -64,7 +64,7 @@ navbar = html.Div(
     children=[
         html.Div(
             [
-                dcc.Link([html.Img(src="/assets/logo.svg",className="logo-header"),html.Div('Quitter.app')], href='/', className="nav-quitter"), 
+                dcc.Link([html.Img(src="/assets/logo.svg",className="logo-header"),html.Div('Quitter')], href='/', className="nav-quitter"), 
             ],
             className="nav-quitter-container"),
         html.Div(
@@ -112,14 +112,14 @@ app.layout = html.Div([
     html.Title('Quitter'),
     html.Meta(name="og:title", content="Quitter"),
     html.Meta(name="og:description", content="Quadratic voting twitter"),
-    html.Meta(name="og:image", content="https://quitter.app/assets/logo.svg"),
-    html.Meta(name="og:url", content="https://quitter.app/"),
+    html.Meta(name="og:image", content="https://quitter/assets/logo.svg"),
+    html.Meta(name="og:url", content="https://quitter/"),
     html.Meta(name="twitter:card", content="summary_large_image"),
     html.Meta(name="twitter:site", content="@Quitter_app"),
     html.Meta(name="twitter:title", content="Quitter"),
     html.Meta(name="twitter:description", content="Quadratic voting twitter"),
-    html.Meta(name="twitter:image", content="https://quitter.app/assets/logo.svg"),
-    html.Meta(name="twitter:url", content="https://quitter.app/"),
+    html.Meta(name="twitter:image", content="https://quitter/assets/logo.svg"),
+    html.Meta(name="twitter:url", content="https://quitter/"),
     dcc.Store(id='login-recaptcha-send'),
     dcc.Store(id='register-recaptcha-send'),
     dcc.Store(id='login', storage_type='local'),

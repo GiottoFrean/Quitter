@@ -1,5 +1,5 @@
-ssh giotto@central.quitter.app
-ssh giotto@quitter.app
+ssh giotto@central.quitter
+ssh giotto@quitter
 
 ssh-keygen to make a key
 cat ~/.ssh/id_rsa.pub to copy the key
