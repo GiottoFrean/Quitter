@@ -14,12 +14,23 @@ app_config = json.load(open("dash_app/app_config.json"))
 _site = os.environ.get("RECAPTCHA_SITE_KEY")
 _secret = os.environ.get("RECAPTCHA_SECRET_KEY")
 _debug = os.environ.get("DEBUG")
+_disable_recaptcha = os.environ.get("DISABLE_RECAPTCHA")
 if _site:
     app_config["recaptcha_site_key"] = _site
 if _secret:
     app_config["recaptcha_secret_key"] = _secret
 if _debug is not None:
     app_config["debug"] = _debug.lower() in ("1", "true", "yes", "on")
+disable_recaptcha = False
+if _disable_recaptcha is not None:
+    disable_recaptcha = _disable_recaptcha.lower() in ("1", "true", "yes", "on")
+
+# Determine whether reCAPTCHA should be enabled
+recaptcha_enabled = (not app_config["debug"]) and (not disable_recaptcha)
+
+# Build external scripts: load reCAPTCHA only when enabled
+recaptcha_url = "https://www.google.com/recaptcha/api.js?render={}".format(app_config["recaptcha_site_key"])
+external_scripts = [recaptcha_url] if recaptcha_enabled else []
 
 app = dash.Dash(
     __name__, 
@@ -36,7 +47,7 @@ app = dash.Dash(
         {"http-equiv": "X-UA-Compatible", "content": "IE=edge"},
         {"name": "viewport", "content": "width=device-width, initial-scale=1.0"},
     ],
-    external_scripts=["https://www.google.com/recaptcha/api.js?render=_site-key".replace("_site-key",app_config["recaptcha_site_key"])],
+    external_scripts=external_scripts,
     update_title=None,
 )
 app._favicon = "logo.svg"
@@ -63,6 +74,33 @@ navbar = html.Div(
 )
 
 server = app.server
+
+# Optional: run the state updater loop inside the web process when enabled
+enable_state_worker = os.environ.get("ENABLE_STATE_WORKER", "false").lower() in ("1", "true", "yes", "on")
+if enable_state_worker:
+    try:
+        import threading, time
+        from central_script import update_state
+        from database.database import SessionLocal
+
+        def _state_worker_loop():
+            while True:
+                try:
+                    session = SessionLocal()
+                    update_state(session)
+                    session.close()
+                    time.sleep(1)
+                except Exception as e:
+                    print("[state-worker] error:", e)
+                    time.sleep(5)
+
+        # Avoid double-start when Flask reloader is active
+        is_reloader_child = os.environ.get("WERKZEUG_RUN_MAIN") == "true"
+        if (not app_config.get("debug", False)) or is_reloader_child:
+            threading.Thread(target=_state_worker_loop, daemon=True).start()
+            print("[state-worker] started in web process")
+    except Exception as e:
+        print("[state-worker] failed to start:", e)
 
 app.layout = html.Div([
     html.Meta(name='description', content='Quadratic voting twitter'),
@@ -132,22 +170,25 @@ def login(recaptcha_token, logout_clicks, username_login, password_login):
     
     if username_login is None or password_login is None:
         return dash.no_update, dash.no_update
-
-    response = requests.post(
-        'https://www.google.com/recaptcha/api/siteverify',
-        data = {
-            'secret': app_config["recaptcha_secret_key"],
-            'response': recaptcha_token
-        }
-    )
-    result = response.json()
-
-    if not app_config["debug"]:
-        if not result["success"]:
+    # reCAPTCHA: verify only when enabled; otherwise accept a dummy token
+    if recaptcha_enabled:
+        if not recaptcha_token:
             return dash.no_update, "Recaptcha failed"
-    
-        if not result["score"] > 0.5:
+        response = requests.post(
+            'https://www.google.com/recaptcha/api/siteverify',
+            data = {
+                'secret': app_config["recaptcha_secret_key"],
+                'response': recaptcha_token
+            }
+        )
+        result = response.json()
+        if not result.get("success"):
             return dash.no_update, "Recaptcha failed"
+        if not result.get("score", 0) > 0.5:
+            return dash.no_update, "Recaptcha failed"
+    else:
+        if not recaptcha_token:
+            recaptcha_token = "debug-token"
     
     user = database_interaction.get_user(username_login)
     if user is None:
@@ -197,12 +238,8 @@ def register(register_clicks, recaptcha_token, username_register, password_regis
     if not username_register or not password_register or not password_register_confirm:
         return dash.no_update, "Please fill all fields"
 
-    # If reCAPTCHA token is missing and we're in debug, proceed with a dummy token
-    if not recaptcha_token and app_config["debug"]:
-        recaptcha_token = "debug-token"
-
-    # Verify reCAPTCHA only when not in debug
-    if not app_config["debug"]:
+    # If reCAPTCHA is disabled, allow a dummy token; otherwise verify
+    if recaptcha_enabled:
         if not recaptcha_token:
             return dash.no_update, "Recaptcha failed"
         response = requests.post(
@@ -218,6 +255,9 @@ def register(register_clicks, recaptcha_token, username_register, password_regis
             return dash.no_update, "Recaptcha failed"
         if not result.get("score", 0) > 0.5:
             return dash.no_update, "Recaptcha failed"
+    else:
+        if not recaptcha_token:
+            recaptcha_token = "debug-token"
     
     user = database_interaction.get_user(username_register)
     if not user is None:
