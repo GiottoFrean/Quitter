@@ -25,8 +25,13 @@ disable_recaptcha = False
 if _disable_recaptcha is not None:
     disable_recaptcha = _disable_recaptcha.lower() in ("1", "true", "yes", "on")
 
-# Determine whether reCAPTCHA should be enabled
-recaptcha_enabled = (not app_config["debug"]) and (not disable_recaptcha)
+def _is_placeholder(val):
+    return (val is None) or (val.strip() == "") or (val in ("site_key", "secret_key"))
+
+# Determine whether reCAPTCHA should be enabled (only if not debug, not disabled, and keys are present)
+recaptcha_keys_present = not _is_placeholder(app_config.get("recaptcha_site_key")) and not _is_placeholder(app_config.get("recaptcha_secret_key"))
+recaptcha_enabled = (not app_config["debug"]) and (not disable_recaptcha) and recaptcha_keys_present
+print("[startup] recaptcha_enabled=", recaptcha_enabled, "debug=", app_config["debug"], "disable_recaptcha=", disable_recaptcha)
 
 # Build external scripts: load reCAPTCHA only when enabled
 recaptcha_url = "https://www.google.com/recaptcha/api.js?render={}".format(app_config["recaptcha_site_key"])
