@@ -7,8 +7,19 @@ from dash_app.utils import database_interaction
 import dash_bootstrap_components as dbc
 import json
 import requests
+import os
 
 app_config = json.load(open("dash_app/app_config.json"))
+# Override sensitive/config values from environment if provided
+_site = os.environ.get("RECAPTCHA_SITE_KEY")
+_secret = os.environ.get("RECAPTCHA_SECRET_KEY")
+_debug = os.environ.get("DEBUG")
+if _site:
+    app_config["recaptcha_site_key"] = _site
+if _secret:
+    app_config["recaptcha_secret_key"] = _secret
+if _debug is not None:
+    app_config["debug"] = _debug.lower() in ("1", "true", "yes", "on")
 
 app = dash.Dash(
     __name__, 
@@ -84,11 +95,16 @@ dash.clientside_callback(
     """
     function(data) {
         if (data) {
+            if (typeof grecaptcha === 'undefined') {
+                return 'debug-token';
+            }
             return new Promise(
                 function(resolve, reject) {
                     grecaptcha.ready(function() {
                         grecaptcha.execute('_site-key', {action: 'submit'}).then(function(token) {
                             resolve(token);
+                        }).catch(function(){
+                            resolve('debug-token');
                         });
                     });
                 }
@@ -146,11 +162,16 @@ dash.clientside_callback(
     """
     function(data) {
         if (data) {
+            if (typeof grecaptcha === 'undefined') {
+                return 'debug-token';
+            }
             return new Promise(
                 function(resolve, reject) {
                     grecaptcha.ready(function() {
                         grecaptcha.execute('_site-key', {action: 'submit'}).then(function(token) {
                             resolve(token);
+                        }).catch(function(){
+                            resolve('debug-token');
                         });
                     });
                 }
@@ -164,29 +185,38 @@ dash.clientside_callback(
 )
 
 @dash.callback(
-    Output("login", "data"),
+    Output("login", "data", allow_duplicate=True),
     Output("register-error-message", "children"),
-    [Input("register-recaptcha-send", "data")],
-    [State("username-register", "value"), State("password-register", "value"), State("password-register-confirm", "value")],
+    [Input("register-button", "n_clicks")],
+    [State("register-recaptcha-send", "data"), State("username-register", "value"), State("password-register", "value"), State("password-register-confirm", "value")],
+    prevent_initial_call=True
 )
-def register(recaptcha_token, username_register, password_register, password_register_confirm):
-    if username_register is None or password_register is None or password_register_confirm is None:
-        return dash.no_update, dash.no_update
+def register(register_clicks, recaptcha_token, username_register, password_register, password_register_confirm):
+    ctx = dash.callback_context
+    print("[register] triggered by:", ctx.triggered_id, "token:", bool(recaptcha_token), "username:", username_register)
+    if not username_register or not password_register or not password_register_confirm:
+        return dash.no_update, "Please fill all fields"
 
-    response = requests.post(
-        'https://www.google.com/recaptcha/api/siteverify',
-        data = {
-            'secret': app_config["recaptcha_secret_key"],
-            'response': recaptcha_token
-        }
-    )
-    result = response.json()
+    # If reCAPTCHA token is missing and we're in debug, proceed with a dummy token
+    if not recaptcha_token and app_config["debug"]:
+        recaptcha_token = "debug-token"
 
+    # Verify reCAPTCHA only when not in debug
     if not app_config["debug"]:
-        if not result["success"]:
+        if not recaptcha_token:
             return dash.no_update, "Recaptcha failed"
-    
-        if not result["score"] > 0.5:
+        response = requests.post(
+            'https://www.google.com/recaptcha/api/siteverify',
+            data = {
+                'secret': app_config["recaptcha_secret_key"],
+                'response': recaptcha_token
+            }
+        )
+        result = response.json()
+
+        if not result.get("success"):
+            return dash.no_update, "Recaptcha failed"
+        if not result.get("score", 0) > 0.5:
             return dash.no_update, "Recaptcha failed"
     
     user = database_interaction.get_user(username_register)
@@ -204,8 +234,10 @@ def register(recaptcha_token, username_register, password_register, password_reg
     if not username_no_underscores.isalnum():
         return dash.no_update, "username can only contain letters, numbers, underscores"
 
+    print("[register] creating user:", username_register)
     database_interaction.create_user(username_register, password_register)
     user_id = database_interaction.get_user(username_register).id
+    print("[register] success; user_id:", user_id)
     return {"user_id": user_id}, "You are now registered & logged in!"
 
 if __name__ == '__main__':
