@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: quitter-web
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn --bind 0.0.0.0:$PORT app:server
+    autoDeploy: true
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: RECAPTCHA_SITE_KEY
+        sync: false
+      - key: RECAPTCHA_SECRET_KEY
+        sync: false
+      - key: DEBUG
+        value: "false"
+
+  - type: worker
+    name: quitter-worker
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python central_script.py
+    autoDeploy: true
+    envVars:
+      - key: DATABASE_URL
+        sync: false
