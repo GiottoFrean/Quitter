@@ -21,19 +21,24 @@ explanation1 = html.Div([
     html.P('Welcome to Quitter, a unique social media platform powered by quadratic voting.'),
     html.H4('How does it work?'),
     html.P('Quitter removes the traditional \'like\' system and replaces it with a voting mechanism. '
-            'Posts are thinned down in a series of rounds, with a single one being left at the end. '
-            'This is done using in a way which incentivises you to vote in accordance with your actual preferences.'),
+            'Posts are thinned down through a series of rounds, with a single one remaining at the end. '
+            'This uses a method that incentivises you to vote in accordance with your actual preferences.'),
 
     html.H4('Why is this a good idea?'),
     html.P('Quitter addresses several issues prevalent in conventional social media platforms:'),
     html.Ul([
         html.Li([
+            html.Strong("Transparent ranking:"),
+            " Content is ranked through democratic voting, not opaque algorithms designed to maximize engagement. "
+            "Outcomes align with true user preferences rather than what keeps you scrolling."
+        ]),
+        html.Li([
             html.Strong("Overwhelming content:"),
-            " On Quitter only the stuff that matters makes it, no more reading unfiltered rubbish."
+            " On Quitter, only the stuff that matters makes it through."
         ]),
         html.Li([
             html.Strong("Bias towards frequent users:"),
-            " On Quitter every user has a fixed influence in the voting process. Other platforms let users like as much as they want."
+            " On Quitter, every user has a fixed influence in the voting process. Other platforms let users like as much as they want."
         ]),
         html.Li([
             html.Strong("Popularity over quality:"),
@@ -41,25 +46,25 @@ explanation1 = html.Div([
         ]),
         html.Li([
             html.Strong("Tyrannies:"),
-            " Quitter doesn't risk being skewed by a tiny group of users, while also avoiding capture by a majority, thanks to quadratic voting."
+            " Quitter doesn't risk being skewed by a tiny group of users while also avoiding capture by a majority, thanks to quadratic voting."
         ])
     ]),
     html.H4('What is the quadratic voting system?'),
     html.P('You get 100 voting \'credits\' per round, and you can spend them on any candidate post. '
             'The number of votes you give is the square root of the number of credits you spend. '
-            'This means you can give 1 credit for 1 vote, 4 credits for 2 votes, 9 credits for 3 votes etc. '
+            'This means you can give 1 credit for 1 vote, 4 credits for 2 votes, 9 credits for 3 votes, etc. '
             'In other words, the marginal cost of adding another vote is 2 more credits than the previous vote. '
             'You can also give negative votes to posts you don\'t like.'),
     html.H4('Why does it work?'),
     html.P('It makes you spend your votes in proportion to how good you think each post is. '
-            'If you just had 10 votes to spend you would them all on the post you like the most, as every vote makes it slightly more likely to win.'
-            'Quadratic voting means there are alternatives - you could spend 8 on your favorite and 6 on your second favorite. '
-            'The tyranny of the majority is also avoided - consider if there were 3 candidates A, B and C. '
-            'Say 51% of people give A a rating of 10/10, then B 8/10 and C 0/10. '
-            'The other 49% give C 10/10 then B 8/10, and A 0/10. '
-            'In a normal election A would win, as the 51% would give their votes to A. '
-            'This would not be optimal as 49% of people would be very unhappy. '
-            'With quadratic voting B would win, as both the 51% and the 49% would give a significant number of votes to B.')
+            'If you just had 10 votes to spend, you would give them all to the post you like the most, as every vote makes it slightly more likely to win. '
+            'Quadratic voting means there are alternatives—you could spend 8 on your favorite and 6 on your second favorite. '
+            'The tyranny of the majority is also avoided. Consider if there were 3 candidates A, B, and C. '
+            'Say 51% of people give A a rating of 10/10, then B 8/10, and C 0/10. '
+            'The other 49% give C 10/10, then B 8/10, and A 0/10. '
+            'In a normal election, A would win, as the 51% would give their votes to A. '
+            'This would not be optimal, as 49% of people would be very unhappy. '
+            'With quadratic voting, B would win, as both the 51% and the 49% would give a significant number of votes to B.')
 ])
 
 
